@@ -25,7 +25,7 @@ $skb_ngoai = function_exists( 'skb_ngu_ngoai' ) && skb_ngu_ngoai();
 		<p>Hotline <a href="tel:<?php echo esc_attr( skb_tel( $hotline ) ); ?>"><?php echo esc_html( $hotline ); ?></a> · <a href="<?php echo esc_url( home_url( '/' ) ); ?>">sklight.vn</a> · <a class="cat-link" href="https://catalog.sklight.vn/?nguon=web" target="_blank" rel="noopener">Catalog phụ kiện</a></p>
 		<?php
 		$skb_legal = array();
-		foreach ( array( 'chinh-sach-bao-mat', 'dieu-khoan-su-dung' ) as $skb_slug ) {
+		foreach ( array( 'tuyen-dai-ly', 'chinh-sach-bao-mat', 'dieu-khoan-su-dung' ) as $skb_slug ) {
 			$skb_pg = get_page_by_path( $skb_slug );
 			if ( $skb_pg && 'publish' === $skb_pg->post_status ) {
 				$skb_legal[] = '<a href="' . esc_url( get_permalink( $skb_pg ) ) . '">' . esc_html( get_the_title( $skb_pg ) ) . '</a>';

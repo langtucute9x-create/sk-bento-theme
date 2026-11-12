@@ -47,6 +47,12 @@ uksort( $tinhs, function ( $a, $b ) {
 			?>
 		</div>
 		<p class="tile-text dl-empty" hidden>Chưa có đại lý khớp. Gọi hotline <a href="tel:<?php echo esc_attr( skb_tel( skb_opt( 'hotline', '0868 055 555' ) ) ); ?>"><?php echo esc_html( skb_opt( 'hotline', '0868 055 555' ) ); ?></a> để SK tư vấn điểm lắp gần nhất.</p>
+		<?php
+		$skb_tdl = get_page_by_path( 'tuyen-dai-ly' );
+		if ( $skb_tdl && 'publish' === $skb_tdl->post_status ) :
+			?>
+			<p class="tile-text dl-tuyen">Bạn là gara muốn làm đại lý SK? <a href="<?php echo esc_url( get_permalink( $skb_tdl ) ); ?>">Xem trang tuyển đại lý</a></p>
+		<?php endif; ?>
 	</section>
 </div>
 <script>

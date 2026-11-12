@@ -887,3 +887,5 @@ a.hst-card:hover{color:var(--text);background:var(--tile-2);border-color:rgba(25
   .tdl-cta .btn{flex:1 1 100%}
   .tdl-gach li{font-size:17px}
 }
+.dl-tuyen{margin-top:32px;padding-top:20px;border-top:1px solid var(--line)}
+.dl-tuyen a{color:var(--link);font-weight:600;text-decoration:underline;text-underline-offset:3px}
