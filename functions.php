@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'SKB_VER', '0.15.1' );
+define( 'SKB_VER', '0.16.0' );
 
 /* Đa ngôn ngữ: phải nạp sớm để nhận /en/ /zh/… trước khi WordPress đọc đường dẫn */
 require_once get_template_directory() . '/inc/da-ngu.php';

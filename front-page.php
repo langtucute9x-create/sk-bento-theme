@@ -53,6 +53,7 @@ $dealer_q    = $ngoai ? null : new WP_Query( array( 'post_type' => 'dai_ly', 'po
 	</div>
 </section>
 
+<?php if ( ! $ngoai ) { get_template_part( 'template-parts/trang-chu-vi', null, array( 'khoi' => 'noi-lo' ) ); } ?>
 <section class="features" aria-label="<?php echo esc_attr( skb__( 'Ưu điểm' ) ); ?>">
 	<div class="feat">
 		<span class="feat-i" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 10h18"/></svg></span>
@@ -75,6 +76,7 @@ $dealer_q    = $ngoai ? null : new WP_Query( array( 'post_type' => 'dai_ly', 'po
 		<p class="feat-d"><?php skb_e( 'Màu, hiệu ứng theo nhạc trên điện thoại.' ); ?></p>
 	</div>
 </section>
+<?php if ( ! $ngoai ) { get_template_part( 'template-parts/trang-chu-vi', null, array( 'khoi' => 'so-lieu' ) ); } ?>
 
 <section class="sec" aria-labelledby="gal-title">
 	<div class="sec-head">
@@ -165,6 +167,8 @@ $dealer_q    = $ngoai ? null : new WP_Query( array( 'post_type' => 'dai_ly', 'po
 	</div>
 </section>
 <?php else : ?>
+<?php get_template_part( 'template-parts/trang-chu-vi', null, array( 'khoi' => 'hoi-dap' ) ); ?>
+<?php get_template_part( 'template-parts/trang-chu-vi', null, array( 'khoi' => 'bai-viet' ) ); ?>
 <section class="sec cta2">
 	<h2>Sẵn sàng thay đổi cảm xúc lái xe?</h2>
 	<p>Đặt lịch tư vấn và lắp đặt tại đại lý gần nhất.</p>
