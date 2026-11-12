@@ -76,6 +76,9 @@ function skb_seo_mo_ta() {
 			$d = wp_trim_words( $d, 30, '…' );
 		}
 		$d = trim( preg_replace( '/\s+/u', ' ', $d ) );
+		if ( function_exists( 'skb_tdl_mo_ta' ) && is_page( SKB_TDL_SLUG ) && '' === trim( (string) get_post_meta( $id, '_skb_seo_desc', true ) ) ) {
+			$d = skb_tdl_mo_ta();
+		}
 		if ( '' === $d && (int) get_option( 'page_for_posts' ) === $id ) {
 			$d = 'Tin tức, kinh nghiệm chọn và lắp đèn LED nội thất ô tô từ SK Ambient Light.';
 		}
@@ -146,6 +149,9 @@ add_action( 'wp_head', function () {
 	if ( is_singular() && has_post_thumbnail( get_queried_object_id() ) ) {
 		$src = wp_get_attachment_image_src( get_post_thumbnail_id( get_queried_object_id() ), 'large' );
 		$img = $src ? $src[0] : '';
+	}
+	if ( '' === $img && function_exists( 'skb_tdl_anh' ) && is_page( SKB_TDL_SLUG ) ) {
+		$img = skb_tdl_anh( 'chia-se.jpg' );
 	}
 	if ( '' === $img && function_exists( 'skb_img' ) ) {
 		$img = skb_img( 'hero_image', 'Camera_XHS_17088886025041040g00830nd7sijp6k3048veh9175o11g6a6mv0-1.webp' );

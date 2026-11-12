@@ -166,12 +166,12 @@ function skb_ngu_dich_duoc() {
 	return is_page() && in_array( (int) get_queried_object_id(), skb_ngu_trang_dich(), true );
 }
 
-/* Bản nước ngoài: trang không có bản dịch → chuyển về bản tiếng Việt; đặt lịch, đại lý → Liên hệ */
+/* Bản nước ngoài: trang không có bản dịch → chuyển về bản tiếng Việt; đặt lịch, đại lý, kích hoạt, tuyển đại lý → Liên hệ */
 add_action( 'template_redirect', function () {
 	if ( ! skb_ngu_ngoai() || skb_ngu_dich_duoc() ) {
 		return;
 	}
-	if ( is_page( 'dat-lich' ) || is_post_type_archive( 'dai_ly' ) || is_singular( 'dai_ly' ) || is_page( 'kich-hoat-bao-hanh' ) ) {
+	if ( is_page( 'dat-lich' ) || is_post_type_archive( 'dai_ly' ) || is_singular( 'dai_ly' ) || is_page( 'kich-hoat-bao-hanh' ) || is_page( 'tuyen-dai-ly' ) ) {
 		wp_safe_redirect( skb_ngu_lien_he(), 302 );
 		exit;
 	}

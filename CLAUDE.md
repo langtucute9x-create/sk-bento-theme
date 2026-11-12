@@ -7,7 +7,7 @@ Kho này **công khai**. Không ghi mật khẩu, khoá, địa chỉ máy chủ
 ## Đọc trước khi làm
 Tài liệu dự án nằm trong `docs/` (xem `docs/README.md`). Quan trọng nhất:
 - `docs/ke-hoach-web-sklight.md`: toàn cảnh, các quyết định chủ đã chốt, việc tiếp theo.
-- `docs/giao-dien-0160.md`, `docs/giao-dien-0150.md`: các đợt sửa gần nhất.
+- `docs/giao-dien-0170.md`, `docs/giao-dien-0160.md`, `docs/giao-dien-0150.md`: các đợt sửa gần nhất.
 - `docs/bao-mat-sklight.md`: phần bảo mật trong theme.
 - `docs/ban-giao-web-sklight-cho-javis.md`: cấu trúc nội dung, trường SEO, đa ngôn ngữ, quy tắc cho Javis (tác tử SEO của chủ).
 
@@ -25,6 +25,7 @@ Tài liệu dự án nằm trong `docs/` (xem `docs/README.md`). Quan trọng nh
 - `single-mau_xe.php`, `inc/goi-san-pham.php`, `inc/bo-anh.php`: trang mẫu xe, gói giá, bộ ảnh.
 - `inc/seo.php` + `assets/seo-editor.js`: SEO trong theme (meta `_skb_seo_*`).
 - `inc/bao-mat.php`, `inc/bo-nho-dem.php`, `inc/chuyen-huong.php`, `inc/toi-uu-anh.php`, `inc/catalog.php`, `inc/tim-xe.php`, `inc/ban-do-dai-ly.php`, `inc/khach-that.php`, `inc/su-kien.php`.
+- `page-tuyen-dai-ly.php` + `inc/tuyen-dai-ly.php`: trang Tuyển đại lý (chỉ tiếng Việt; lợi nhuận 20-50% và 5-20%, không ghi giá).
 
 ## Quy tắc khi sửa
 1. Đổi tệp JS/CSS thì nâng `SKB_VER` trong `functions.php`; ghi phiên bản vào đầu thông điệp commit (ví dụ `0.16.3: …`).
@@ -41,7 +42,7 @@ Tài liệu dự án nằm trong `docs/` (xem `docs/README.md`). Quan trọng nh
 Thư mục `docs/` và tệp này chỉ để trong kho, không đưa lên hosting.
 
 ## Việc đang mở (12/11/2026)
-- Trang tuyển đại lý `/tuyen-dai-ly/` (chỉ nút Zalo và gọi, không form); chờ chủ gửi chính sách đại lý.
+- Trang tuyển đại lý `/tuyen-dai-ly/`: đã làm ở 0.17.0 (`docs/giao-dien-0170.md`), **chưa đưa lên hosting**. Chính sách chi tiết chủ gõ vào nội dung trang.
 - Bản dịch 4 khối trang chủ mới cho 6 ngôn ngữ.
 - Tốc độ: ảnh tấm ốp đầu trang quá cỡ trên điện thoại; hạn bộ nhớ đệm js và tệp tĩnh.
 - Dữ liệu cấu trúc và `llms.txt`: xem `docs/yeu-cau-theme-du-lieu-cau-truc-va-llms-txt.md` (kiểm lại trong mã xem phần nào đã làm).

@@ -22,7 +22,7 @@ $skb_ngoai = function_exists( 'skb_ngu_ngoai' ) && skb_ngu_ngoai();
 	<?php if ( $skb_ngoai ) : ?>
 		<p>WhatsApp / <?php skb_e( 'Điện thoại' ); ?> <a href="<?php echo esc_url( skb_wa_url() ); ?>" target="_blank" rel="noopener"><?php echo esc_html( skb_tel_quoc_te() ); ?></a> · <a href="<?php echo esc_url( home_url( '/' ) ); ?>">sklight.vn</a> · <a class="cat-link" href="https://catalog.sklight.vn/?nguon=web" target="_blank" rel="noopener"><?php skb_e( 'Catalog phụ kiện' ); ?></a></p>
 	<?php else : ?>
-		<p>Hotline <a href="tel:<?php echo esc_attr( skb_tel( $hotline ) ); ?>"><?php echo esc_html( $hotline ); ?></a> · <a href="<?php echo esc_url( home_url( '/' ) ); ?>">sklight.vn</a> · <a class="cat-link" href="https://catalog.sklight.vn/?nguon=web" target="_blank" rel="noopener">Catalog phụ kiện</a></p>
+		<p>Hotline <a href="tel:<?php echo esc_attr( skb_tel( $hotline ) ); ?>"><?php echo esc_html( $hotline ); ?></a> · <a href="<?php echo esc_url( home_url( '/' ) ); ?>">sklight.vn</a> · <a class="cat-link" href="https://catalog.sklight.vn/?nguon=web" target="_blank" rel="noopener">Catalog phụ kiện</a><?php $skb_tdl = get_page_by_path( 'tuyen-dai-ly' ); if ( $skb_tdl && 'publish' === $skb_tdl->post_status ) : ?> · <a href="<?php echo esc_url( get_permalink( $skb_tdl ) ); ?>">Tuyển đại lý</a><?php endif; ?></p>
 		<?php
 		$skb_legal = array();
 		foreach ( array( 'chinh-sach-bao-mat', 'dieu-khoan-su-dung' ) as $skb_slug ) {

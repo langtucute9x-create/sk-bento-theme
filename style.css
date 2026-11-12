@@ -824,6 +824,90 @@ a.hst-card:hover{color:var(--text);background:var(--tile-2);border-color:rgba(25
 }
 @media (prefers-reduced-motion:reduce){.hd summary::after{transition:none}}
 
+/* ===== v0.17.0 — trang Tuyển đại lý (page-tuyen-dai-ly.php) ===== */
+.td{--td-grad:linear-gradient(90deg,#b0248f,#e5235a 55%,#f4912e);display:flex;flex-direction:column;gap:20px}
+.td-grad{background:var(--td-grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.td-eb{margin:0;font-family:var(--font-head);font-size:13px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#f08aa9}
+.td h1,.td-h2{margin:10px 0 0;font-family:var(--font-head);font-weight:800;letter-spacing:-.02em;line-height:1.08}
+.td h1{font-size:64px;text-transform:uppercase}
+.td-h2{font-size:44px}
+.td figure{margin:0}
+.td-mo,.td-khoi{border-radius:var(--radius);background:radial-gradient(120% 90% at 0% 100%,#1a0d22 0%,var(--tile) 60%);overflow:hidden}
+.td-mo{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:stretch;min-height:560px}
+.td-mo-chu{padding:56px 48px;display:flex;flex-direction:column;justify-content:center}
+.td-mo-loi{margin:22px 0 0;font-size:30px;font-weight:700;line-height:1.2}
+.td-mo-loi b{font-family:var(--font-head);font-weight:800}
+.td-mo-anh{position:relative}
+.td-mo-anh img,.td-ln-anh img,.td-c1-anh img{width:100%;height:100%;object-fit:cover}
+.td-mo-anh::before{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(90deg,var(--tile) 0,rgba(20,20,25,0) 30%);pointer-events:none}
+.td-nut{display:flex;flex-wrap:wrap;gap:10px;margin-top:30px}
+.td-nut-giua{justify-content:center}
+.td-zalo{background:var(--zalo);color:var(--white)}
+.td-zalo:hover{color:var(--white);filter:brightness(1.1)}
+.td-phu{margin:14px 0 0;font-size:14px;color:var(--muted)}
+.td-phu a{color:var(--link)}
+.td-o4{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.td-o4 li{display:flex;align-items:center;gap:14px;padding:20px;border-radius:var(--radius-sm);background:var(--tile);border:1px solid var(--border);font-weight:600;font-size:16px}
+.td-o4 svg{width:30px;height:30px;flex:none;fill:none;stroke:#e5235a;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.td-so{margin:8px 0 0;font-family:var(--font-head);font-weight:800;font-size:112px;line-height:1;letter-spacing:-.03em}
+.td-tag{margin:10px 0 0;font-size:28px;font-weight:700;line-height:1.25}
+.td-mo-ta{margin:14px 0 0;font-size:17px;color:var(--soft);line-height:1.55}
+.td-ds{list-style:none;margin:24px 0 0;padding:0;display:grid;gap:12px}
+.td-ds li{display:flex;align-items:center;gap:14px;font-size:17px;font-weight:500;color:var(--text-2)}
+.td-ds li::before{content:"";flex:0 0 22px;height:3px;border-radius:2px;background:linear-gradient(90deg,#e5235a,#f4912e)}
+.td-ln{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);align-items:stretch}
+.td-ln-chu,.td-mm-chu,.td-c1-chu{padding:48px}
+.td-ln-anh{position:relative;min-height:380px}
+.td-ln-anh::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,var(--tile) 0,rgba(20,20,25,0) 25%);pointer-events:none}
+.td-mm{display:grid;grid-template-columns:minmax(0,4fr) minmax(0,8fr);gap:8px;align-items:center}
+.td-mm .td-mm-chu{padding-right:0}
+.td-link{display:inline-block;margin-top:22px;font-weight:600;color:var(--link)}
+.td-luoi{list-style:none;margin:0;padding:32px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.td-luoi img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:16px;border:1px solid var(--border)}
+.td-luoi figcaption{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:15px;font-weight:600}
+.td-luoi figcaption::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--td-grad)}
+.td-c1{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:stretch}
+.td-c1-anh{position:relative;min-height:420px}
+.td-c1-anh::after{content:"";position:absolute;inset:0;background:linear-gradient(270deg,var(--tile) 0,rgba(20,20,25,0) 30%);pointer-events:none}
+.td-dq{list-style:none;margin:26px 0 0;padding:0;border-top:1px solid var(--line-2)}
+.td-dq li{display:flex;gap:22px;padding:20px 0;border-bottom:1px solid var(--line-2)}
+.td-n{font-family:var(--font-head);font-weight:800;font-size:34px;line-height:1;flex:0 0 52px}
+.td-dq h3{margin:0;font-size:20px;line-height:1.3}
+.td-dq p{margin:6px 0 0;color:var(--muted);font-size:15px;line-height:1.5}
+.td-cs{padding:40px 48px}
+.td-cs .entry{margin-top:16px}
+.td-cuoi{padding:56px 32px;text-align:center;background:radial-gradient(80% 120% at 50% 0%,#2a0f2a 0%,var(--tile) 65%)}
+.td-cuoi .td-ds{display:inline-grid;text-align:left;margin-top:26px}
+@media (max-width:900px){
+  .td{gap:12px}
+  .td-mo,.td-ln,.td-mm,.td-c1{grid-template-columns:minmax(0,1fr)}
+  .td-mo{min-height:0}
+  .td-mo-anh{order:-1;aspect-ratio:4/3}
+  .td-mo-anh::before{background:linear-gradient(0deg,var(--tile) 0,rgba(20,20,25,0) 35%)}
+  .td-mo-chu{padding:4px 22px 28px;margin-top:-40px;position:relative;z-index:2}
+  .td h1{font-size:40px}
+  .td-h2{font-size:32px}
+  .td-mo-loi{font-size:24px}
+  .td-nut .btn{flex:1 1 100%}
+  .td-o4{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .td-o4 li{padding:14px;font-size:14px;gap:10px}
+  .td-o4 svg{width:24px;height:24px}
+  .td-ln-chu,.td-mm-chu,.td-c1-chu{padding:28px 22px}
+  .td-mm .td-mm-chu{padding-right:22px;padding-bottom:0}
+  .td-ln-anh{min-height:0;aspect-ratio:2/1}
+  .td-ln-anh::before{background:linear-gradient(180deg,var(--tile) 0,rgba(20,20,25,0) 25%)}
+  .td-so{font-size:80px}
+  .td-tag{font-size:22px}
+  .td-ds li,.td-mo-ta{font-size:16px}
+  .td-luoi{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:18px 22px 26px}
+  .td-luoi figcaption{font-size:14px}
+  .td-c1-anh{min-height:0;aspect-ratio:7/6}
+  .td-c1-anh::after{background:linear-gradient(0deg,var(--tile) 0,rgba(20,20,25,0) 30%)}
+  .td-c1-chu{padding-top:4px}
+  .td-cs{padding:26px 22px}
+  .td-cuoi{padding:36px 22px}
+}
+
 /* ===== v0.16.1 — phông chữ đặt ngay trong theme (assets/fonts), không gọi Google Fonts ===== */
 @font-face{font-family:'Montserrat';font-style:normal;font-weight:100 900;font-display:swap;src:url(assets/fonts/montserrat-vietnamese-wght-normal.woff2) format('woff2');unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}
 @font-face{font-family:'Montserrat';font-style:normal;font-weight:100 900;font-display:swap;src:url(assets/fonts/montserrat-latin-wght-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}

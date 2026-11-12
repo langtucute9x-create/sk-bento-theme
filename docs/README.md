@@ -7,6 +7,7 @@ Vì kho này công khai, bản chép ở đây **đã lược** địa chỉ má
 | Tệp | Nội dung |
 |---|---|
 | `ke-hoach-web-sklight.md` | Toàn cảnh: quyết định đã chốt, cấu trúc web và theme, SK Core, catalog, việc tiếp theo |
+| `giao-dien-0170.md` | Bản 0.17.0: trang Tuyển đại lý, nội dung đã chốt, ảnh, việc sau khi đưa lên hosting |
 | `giao-dien-0160.md` | Bản 0.16.0–0.16.1: 4 khối trang chủ, tốc độ, quy trình đưa mã lên hosting |
 | `giao-dien-0150.md` | Bản 0.15.0–0.15.1: biến màu, phông, nút, khối hệ sinh thái |
 | `bao-mat-sklight.md` | Bảo mật trong theme (0.16.2) và việc có thể làm thêm |

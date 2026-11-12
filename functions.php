@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'SKB_VER', '0.16.2' );
+define( 'SKB_VER', '0.17.0' );
 
 /* Bảo mật: nạp sớm để chặn XML-RPC trước khi làm việc khác */
 require_once get_template_directory() . '/inc/bao-mat.php';
@@ -67,6 +67,7 @@ require_once get_template_directory() . '/inc/khach-that.php';
 require_once get_template_directory() . '/inc/dat-lich-core.php';
 require_once get_template_directory() . '/inc/bo-nho-dem.php';
 require_once get_template_directory() . '/inc/catalog.php';
+require_once get_template_directory() . '/inc/tuyen-dai-ly.php';
 /* SEO: ô SEO trong trình soạn bài + thẻ meta / Open Graph */
 require_once get_template_directory() . '/inc/seo.php';
 
