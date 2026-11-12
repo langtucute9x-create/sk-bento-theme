@@ -1,9 +1,0 @@
-# SK Bento: tệp tĩnh của theme đổi tên theo ?ver= mỗi bản, nên cho trình duyệt giữ lâu.
-<IfModule mod_expires.c>
-ExpiresActive On
-ExpiresByType text/css "access plus 1 year"
-ExpiresByType application/javascript "access plus 1 year"
-ExpiresByType text/javascript "access plus 1 year"
-ExpiresByType font/woff2 "access plus 1 year"
-ExpiresByType image/webp "access plus 30 days"
-</IfModule>
