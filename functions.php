@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'SKB_VER', '0.16.0' );
+define( 'SKB_VER', '0.16.1' );
 
 /* Đa ngôn ngữ: phải nạp sớm để nhận /en/ /zh/… trước khi WordPress đọc đường dẫn */
 require_once get_template_directory() . '/inc/da-ngu.php';
@@ -27,17 +27,17 @@ add_action( 'after_setup_theme', function () {
 } );
 
 add_action( 'wp_enqueue_scripts', function () {
-	wp_enqueue_style( 'skb-fonts', 'https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Montserrat:wght@700;800&display=swap', array(), null );
 	wp_enqueue_style( 'skb-style', get_stylesheet_uri(), array(), SKB_VER );
 	wp_enqueue_script( 'skb-main', get_template_directory_uri() . '/assets/main.js', array(), SKB_VER, true );
 } );
 
-add_filter( 'wp_resource_hints', function ( $urls, $relation ) {
-	if ( 'preconnect' === $relation ) {
-		$urls[] = array( 'href' => 'https://fonts.gstatic.com', 'crossorigin' );
+/* Phông chữ nằm trong theme (assets/fonts, khai báo cuối style.css). Tải trước phông tiêu đề để dòng chữ lớn đầu trang hiện sớm. */
+add_action( 'wp_head', function () {
+	$dir = get_template_directory_uri() . '/assets/fonts/';
+	foreach ( array( 'montserrat-latin-wght-normal.woff2', 'montserrat-vietnamese-wght-normal.woff2' ) as $f ) {
+		printf( '<link rel="preload" href="%s" as="font" type="font/woff2" crossorigin>' . "\n", esc_url( $dir . $f ) );
 	}
-	return $urls;
-}, 10, 2 );
+}, 1 );
 
 /* Cảnh 3D đầu trang chủ (Three.js từ CDN, tải dạng module) */
 /* Kiểu đầu trang: 'anh' (ảnh tấm ốp thật, mặc định) hoặc '3d' (xem lại bản cũ bằng ?hero=3d) */

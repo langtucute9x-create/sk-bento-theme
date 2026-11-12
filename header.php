@@ -23,7 +23,7 @@ $skb_ngoai = function_exists( 'skb_ngu_ngoai' ) && skb_ngu_ngoai();
 		if ( $logo_id ) {
 			echo wp_get_attachment_image( $logo_id, 'full', false, array( 'alt' => get_bloginfo( 'name' ) ) );
 		} else {
-			printf( '<img src="%s" alt="%s">', esc_url( get_template_directory_uri() . '/assets/img/logo-full-png-1.webp' ), esc_attr( get_bloginfo( 'name' ) ) );
+			printf( '<img src="%s" alt="%s" width="800" height="135">', esc_url( get_template_directory_uri() . '/assets/img/logo-full-png-1.webp' ), esc_attr( get_bloginfo( 'name' ) ) );
 		}
 		?>
 	</a>
