@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'SKB_VER', '0.17.0' );
+define( 'SKB_VER', '0.18.0' );
 
 /* Bảo mật: nạp sớm để chặn XML-RPC trước khi làm việc khác */
 require_once get_template_directory() . '/inc/bao-mat.php';
@@ -66,12 +66,25 @@ require_once get_template_directory() . '/inc/su-kien.php';
 require_once get_template_directory() . '/inc/khach-that.php';
 require_once get_template_directory() . '/inc/dat-lich-core.php';
 require_once get_template_directory() . '/inc/bo-nho-dem.php';
+/* Chương trình khuyến mại (banner, đồng hồ, giá theo chương trình; chỉ bản tiếng Việt) */
+require_once get_template_directory() . '/inc/khuyen-mai.php';
 require_once get_template_directory() . '/inc/catalog.php';
 /* SEO: ô SEO trong trình soạn bài + thẻ meta / Open Graph */
 require_once get_template_directory() . '/inc/seo.php';
 
-/* Giá mẫu xe: "8.700.000đ" hoặc rỗng nếu chưa có */
+/* Giá "từ" của mẫu xe đang hiển thị (bản Việt: theo chương trình khuyến mại): "8.700.000đ" hoặc rỗng */
 function skb_gia( $post_id = 0 ) {
+	$post_id = $post_id ? $post_id : get_the_ID();
+	if ( function_exists( 'skb_km_tu' ) ) {
+		$p = skb_km_tu( $post_id );
+		return $p && $p['ban'] > 0 ? number_format( $p['ban'], 0, ',', '.' ) . 'đ' : '';
+	}
+	$v = (float) get_post_meta( $post_id, '_skb_gia', true );
+	return $v > 0 ? number_format( $v, 0, ',', '.' ) . 'đ' : '';
+}
+
+/* Giá bán thấp nhất đã lưu (_skb_gia), không theo chương trình: dùng cho dữ liệu lưu tạm dùng chung */
+function skb_gia_luu( $post_id = 0 ) {
 	$v = (float) get_post_meta( $post_id ? $post_id : get_the_ID(), '_skb_gia', true );
 	return $v > 0 ? number_format( $v, 0, ',', '.' ) . 'đ' : '';
 }

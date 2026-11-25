@@ -25,7 +25,10 @@ function skb_tim_xe_du_lieu() {
 		$out[]  = array(
 			't' => skb_ten_ngan( get_the_title( $p ) ),
 			'u' => get_permalink( $p ),
-			'p' => skb_gia( $p->ID ),
+			// p: giá bán thấp nhất (giá khuyến mại); pg: giá "từ" ngoài chương trình (niêm yết). JS chọn theo chương trình,
+			// nên dữ liệu lưu tạm này không phụ thuộc giờ khuyến mại.
+			'p' => skb_gia_luu( $p->ID ),
+			'pg' => function_exists( 'skb_km_tu' ) && ( $skb_pg = skb_km_tu( $p->ID, false ) ) ? skb_tien( $skb_pg['ban'] ) : skb_gia_luu( $p->ID ),
 			'i' => $thumb ? $thumb : '',
 			'g' => count( $goi ),
 			'k' => implode( ' ', array_merge( array( get_the_title( $p ), $p->post_name ), is_array( $brands ) ? $brands : array() ) ),

@@ -25,6 +25,10 @@ add_action( 'template_redirect', function () {
 	}
 	// trang có thông báo sau khi gửi form (?datlich=ok…) chỉ lưu ngắn
 	$ttl = isset( $_GET['datlich'] ) ? 300 : 4 * HOUR_IN_SECONDS; // phpcs:ignore
+	// chương trình khuyến mại: bản lưu không được sống quá giờ bắt đầu / kết thúc kế tiếp
+	if ( function_exists( 'skb_km_han_luu' ) && ( $skb_km_han = skb_km_han_luu() ) ) {
+		$ttl = min( $ttl, $skb_km_han );
+	}
 	@header( 'X-LiteSpeed-Cache-Control: public,max-age=' . $ttl ); // phpcs:ignore
 	@header( 'X-LiteSpeed-Tag: ' . SKB_CACHE_TAG ); // phpcs:ignore
 	// bản lưu tách theo cookie đăng nhập: người đã đăng nhập không bao giờ nhận bản lưu của khách
