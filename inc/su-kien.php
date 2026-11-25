@@ -24,6 +24,7 @@ function skb_su_kien_loai() {
 		'video'    => 'Xem video',
 		'tu_catalog' => 'Khách đến từ catalog',
 		'mo_catalog' => 'Bấm sang catalog',
+		'uu_dai'   => 'Bấm Xem ưu đãi',
 	);
 }
 
@@ -136,7 +137,7 @@ function skb_su_kien_trang() {
 		$tot[ $r->loai ] = (int) $r->n;
 	}
 	$daily = array();
-	foreach ( $wpdb->get_results( $wpdb->prepare( "SELECT ngay, loai, SUM(so) n FROM {$t} WHERE ngay >= %s AND loai IN ('goi','zalo','dat_lich','chon_goi') GROUP BY ngay, loai", $from ) ) as $r ) { // phpcs:ignore
+	foreach ( $wpdb->get_results( $wpdb->prepare( "SELECT ngay, loai, SUM(so) n FROM {$t} WHERE ngay >= %s AND loai IN ('goi','zalo','dat_lich','chon_goi','uu_dai') GROUP BY ngay, loai", $from ) ) as $r ) { // phpcs:ignore
 		$daily[ $r->ngay ][ $r->loai ] = (int) $r->n;
 	}
 	$top = function ( $loai, $n = 10 ) use ( $wpdb, $t, $from ) {
@@ -170,6 +171,7 @@ function skb_su_kien_trang() {
 				'ban_do'   => 'Tỉnh được chạm trên bản đồ',
 				'tu_catalog' => 'Trang khách vào từ catalog',
 				'mo_catalog' => 'Bấm sang catalog ở trang nào',
+				'uu_dai'   => 'Bấm Xem ưu đãi ở đâu (vị trí nút · trang)',
 			);
 			foreach ( $blocks as $loai => $title ) :
 				$rows = $top( $loai );
@@ -187,15 +189,65 @@ function skb_su_kien_trang() {
 			<?php endforeach; ?>
 		</div>
 		<h2>Theo ngày</h2>
-		<table class="widefat striped" style="max-width:640px"><thead><tr><th>Ngày</th><th>Gọi</th><th>Zalo</th><th>Đặt lịch</th><th>Chọn gói</th></tr></thead><tbody>
+		<table class="widefat striped" style="max-width:640px"><thead><tr><th>Ngày</th><th>Gọi</th><th>Zalo</th><th>Đặt lịch</th><th>Chọn gói</th><th>Xem ưu đãi</th></tr></thead><tbody>
 			<?php
 			krsort( $daily );
 			foreach ( $daily as $d => $v ) :
 				?>
-				<tr><td><?php echo esc_html( wp_date( 'd/m', strtotime( $d ) ) ); ?></td><td><?php echo (int) ( $v['goi'] ?? 0 ); ?></td><td><?php echo (int) ( $v['zalo'] ?? 0 ); ?></td><td><?php echo (int) ( $v['dat_lich'] ?? 0 ); ?></td><td><?php echo (int) ( $v['chon_goi'] ?? 0 ); ?></td></tr>
+				<tr><td><?php echo esc_html( wp_date( 'd/m', strtotime( $d ) ) ); ?></td><td><?php echo (int) ( $v['goi'] ?? 0 ); ?></td><td><?php echo (int) ( $v['zalo'] ?? 0 ); ?></td><td><?php echo (int) ( $v['dat_lich'] ?? 0 ); ?></td><td><?php echo (int) ( $v['chon_goi'] ?? 0 ); ?></td><td><?php echo (int) ( $v['uu_dai'] ?? 0 ); ?></td></tr>
 			<?php endforeach; ?>
-			<?php if ( ! $daily ) : ?><tr><td colspan="5">Chưa có số liệu.</td></tr><?php endif; ?>
+			<?php if ( ! $daily ) : ?><tr><td colspan="6">Chưa có số liệu.</td></tr><?php endif; ?>
 		</tbody></table>
 	</div>
 	<?php
 }
+
+/* ---------- Đọc số đếm qua REST (Biên tập viên trở lên), để Javis báo cáo sau đợt khuyến mại ----------
+ * GET /wp-json/skb/v1/su-kien?loai=uu_dai&tu=2026-12-01&den=2026-12-25
+ * Trả tổng, số theo ngày và theo mục (vị trí nút · trang). Không có dữ liệu cá nhân.
+ */
+add_action( 'rest_api_init', function () {
+	register_rest_route( 'skb/v1', '/su-kien', array(
+		'methods'             => 'GET',
+		'permission_callback' => function () {
+			return current_user_can( 'edit_posts' );
+		},
+		'args'                => array(
+			'loai' => array( 'default' => 'uu_dai', 'sanitize_callback' => 'sanitize_key' ),
+			'tu'   => array( 'default' => '' ),
+			'den'  => array( 'default' => '' ),
+		),
+		'callback'            => function ( WP_REST_Request $r ) {
+			global $wpdb;
+			$loai = (string) $r['loai'];
+			if ( ! isset( skb_su_kien_loai()[ $loai ] ) ) {
+				return new WP_Error( 'skb_loai', 'Loại không có: ' . $loai, array( 'status' => 400 ) );
+			}
+			$tz  = new DateTimeZone( 'Asia/Ho_Chi_Minh' );
+			$ok  = function ( $d ) {
+				return is_string( $d ) && preg_match( '/^\d{4}-\d{2}-\d{2}$/', $d );
+			};
+			$den = $ok( $r['den'] ) ? $r['den'] : ( new DateTime( 'now', $tz ) )->format( 'Y-m-d' );
+			$tu  = $ok( $r['tu'] ) ? $r['tu'] : ( new DateTime( $den, $tz ) )->modify( '-29 days' )->format( 'Y-m-d' );
+			$t   = skb_su_kien_bang();
+			$ngay = array();
+			foreach ( $wpdb->get_results( $wpdb->prepare( "SELECT ngay, SUM(so) n FROM {$t} WHERE loai = %s AND ngay BETWEEN %s AND %s GROUP BY ngay ORDER BY ngay", $loai, $tu, $den ) ) as $x ) { // phpcs:ignore
+				$ngay[ $x->ngay ] = (int) $x->n;
+			}
+			$muc = array();
+			foreach ( $wpdb->get_results( $wpdb->prepare( "SELECT muc, SUM(so) n FROM {$t} WHERE loai = %s AND ngay BETWEEN %s AND %s GROUP BY muc ORDER BY n DESC LIMIT 50", $loai, $tu, $den ) ) as $x ) { // phpcs:ignore
+				$muc[] = array( 'muc' => $x->muc, 'so' => (int) $x->n );
+			}
+			return array(
+				'loai'    => $loai,
+				'ten'     => skb_su_kien_loai()[ $loai ],
+				'tu'      => $tu,
+				'den'     => $den,
+				'tong'    => array_sum( $ngay ),
+				'ngay'    => (object) $ngay,
+				'muc'     => $muc,
+				'ghi_chu' => 'Không tính lượt của người đang đăng nhập, bỏ bot; ngày theo giờ Việt Nam.',
+			);
+		},
+	) );
+} );

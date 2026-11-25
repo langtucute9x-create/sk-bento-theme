@@ -188,6 +188,12 @@
     else if (a.classList.contains('dir')) { var d = a.closest('.dealer'); ev('chi_duong', d ? (d.querySelector('.name') || d).textContent.trim() : ''); }
     else if (/catalog\.sklight\.vn/i.test(href)) ev('mo_catalog', pageName);
     else if (a.classList.contains('vn-pin') || a.classList.contains('vn-chip')) ev('ban_do', a.getAttribute('data-tinh') || '');
+    /* 0.18.1: nút "Xem ưu đãi" của chương trình khuyến mại (inc/khuyen-mai.php, data-km-nut = thanh | banner | banner-anh | khoi) */
+    if (a.hasAttribute('data-km-nut')) {
+      var vt = a.getAttribute('data-km-nut');
+      ev('uu_dai', vt + ' · ' + trang());
+      try { (window.dataLayer = window.dataLayer || []).push({ event: 'xem_uu_dai', vi_tri: vt, trang: trang() }); } catch (e2) {}
+    }
   }, true);
   document.addEventListener('change', function (e) {
     var r = e.target;
