@@ -156,6 +156,8 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 /* Footer */
 .site-footer{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px 32px;padding:24px 0 32px;border-top:1px solid var(--line);font-size:13px;line-height:1.8;color:var(--muted)}
 .site-footer p{margin:0}
+.site-footer .ft-cty{flex-basis:100%;font-size:12px;opacity:.85}
+.site-footer .ft-copy{margin-top:-8px}
 .mbar{display:none}
 .zalo-float{position:fixed;right:18px;bottom:24px;z-index:30;width:56px;height:56px;border-radius:50%;background:var(--zalo);color:var(--white);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,.4)}
 .zalo-float:hover{color:var(--white)}

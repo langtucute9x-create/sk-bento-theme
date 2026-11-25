@@ -36,6 +36,8 @@ $skb_ngoai = function_exists( 'skb_ngu_ngoai' ) && skb_ngu_ngoai();
 		}
 		?>
 	<?php endif; ?>
+	<p class="ft-cty"><?php echo esc_html( 'SON DUONG ACCESSORIES COMPANY LIMITED · ' . ( $skb_ngoai ? 'Tax ID' : 'MST' ) . ' 0110884626' ); ?></p>
+	<p class="ft-cty ft-copy">© <?php echo esc_html( gmdate( 'Y' ) ); ?> SON DUONG ACCESSORIES COMPANY LIMITED</p>
 </footer>
 </div>
 
