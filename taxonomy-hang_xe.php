@@ -18,7 +18,7 @@ $term = is_tax( 'hang_xe' ) ? get_queried_object() : null;
 					<?php while ( have_posts() ) : the_post(); ?>
 						<a class="post-card" href="<?php the_permalink(); ?>">
 							<div class="thumb"><?php if ( has_post_thumbnail() ) { the_post_thumbnail( 'medium_large', array( 'loading' => 'lazy' ) ); } ?></div>
-							<div class="body"><h2><?php echo esc_html( skb_ngu_ngoai() ? skb_ngu_tieu_de_xe() : get_the_title() ); ?></h2><?php $g = skb_ngu_ngoai() ? skb_ngu_tien( (float) get_post_meta( get_the_ID(), '_skb_gia', true ) ) : skb_gia(); if ( $g ) : ?><p class="mx-card-price"><?php skb_e( 'Từ' ); ?> <strong><?php echo esc_html( $g ); ?></strong></p><?php endif; ?></div>
+							<div class="body"><h2><?php echo esc_html( skb_ngu_ngoai() ? skb_ngu_tieu_de_xe() : get_the_title() ); ?></h2><?php if ( skb_ngu_ngoai() ) : $g = skb_ngu_tien( (float) get_post_meta( get_the_ID(), '_skb_gia', true ) ); if ( $g ) : ?><p class="mx-card-price"><?php skb_e( 'Từ' ); ?> <strong><?php echo esc_html( $g ); ?></strong></p><?php endif; else : echo skb_km_gia_the( get_the_ID() ); endif; // phpcs:ignore ?></div>
 						</a>
 					<?php endwhile; ?>
 				</div>

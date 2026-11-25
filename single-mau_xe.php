@@ -16,10 +16,19 @@ while ( have_posts() ) :
 	}
 	$book    = home_url( '/dat-lich/' );
 	$book_xe = get_the_title() . ( $chon >= 0 ? ' — ' . $goi[ $chon ]['ten'] : '' );
-	$gias    = array_filter( wp_list_pluck( $goi, 'gia' ) );
 	$ngoai   = skb_ngu_ngoai();
 	$tien    = $ngoai ? 'skb_ngu_tien' : 'skb_tien';
-	$khoang  = $gias ? ( min( $gias ) === max( $gias ) ? $tien( min( $gias ) ) : $tien( min( $gias ) ) . ' – ' . $tien( max( $gias ) ) ) : skb__( 'Liên hệ' );
+	// giá hiển thị từng gói: bản Việt theo chương trình khuyến mại (ngoài chương trình chỉ giá niêm yết), bản nước ngoài như cũ
+	$km      = ! $ngoai && skb_km_dang_chay();
+	$gp      = array_map( function ( $g ) {
+		return skb_km_gia( $g['gia'], $g['goc'] );
+	}, $goi );
+	$khoang_f = function ( $v ) use ( $tien ) {
+		$v = array_filter( $v );
+		return $v ? ( min( $v ) === max( $v ) ? $tien( min( $v ) ) : $tien( min( $v ) ) . ' – ' . $tien( max( $v ) ) ) : skb__( 'Liên hệ' );
+	};
+	$khoang  = $khoang_f( wp_list_pluck( $gp, 'ban' ) );
+	$khoang_niem = $khoang_f( wp_list_pluck( $gp, 'niem' ) );
 	$ten_goi = function ( $t ) use ( $ngoai ) {
 		return $ngoai ? skb_ngu_ten_goi( $t ) : $t;
 	};
@@ -56,20 +65,24 @@ while ( have_posts() ) :
 				<div class="mx-info">
 					<h1><?php echo $ngoai ? esc_html( skb_ngu_tieu_de_xe() ) : esc_html( get_the_title() ); ?></h1>
 					<?php if ( function_exists( 'skb_catalog_dau' ) ) { skb_catalog_dau( get_the_ID() ); } ?>
-					<?php if ( $goi ) : $g0 = $chon >= 0 ? $goi[ $chon ] : null; ?>
-						<p class="mx-price" id="mx-price" aria-live="polite"><strong data-p><?php echo esc_html( $g0 ? ( $g0['gia'] ? $tien( $g0['gia'] ) : skb__( 'Liên hệ' ) ) : $khoang ); ?></strong> <s data-o<?php echo ( $g0 && $g0['goc'] > $g0['gia'] ) ? '' : ' hidden'; ?>><?php echo esc_html( $g0 ? $tien( $g0['goc'] ) : '' ); ?></s> <span><?php echo esc_html( $ngoai ? skb__( 'Giá bán tại Việt Nam, gồm VAT' ) : 'đã gồm VAT' ); ?></span></p>
+					<?php if ( $goi ) : $g0 = $chon >= 0 ? $gp[ $chon ] : null; $p0 = $g0 ? ( $g0['ban'] ? $tien( $g0['ban'] ) : skb__( 'Liên hệ' ) ) : $khoang; ?>
+						<p class="mx-price" id="mx-price" aria-live="polite"><strong data-p<?php echo $km ? skb_km_niem_attr( $p0, $g0 ? ( $g0['niem'] ? $tien( $g0['niem'] ) : skb__( 'Liên hệ' ) ) : $khoang_niem ) : ''; // phpcs:ignore ?>><?php echo esc_html( $p0 ); ?></strong> <s data-o data-km-an<?php echo ( $g0 && $g0['goc'] ) ? '' : ' hidden'; ?>><?php echo esc_html( $g0 && $g0['goc'] ? $tien( $g0['goc'] ) : '' ); ?></s> <span><?php echo esc_html( $ngoai ? skb__( 'Giá bán tại Việt Nam, gồm VAT' ) : 'đã gồm VAT' ); ?></span></p>
 						<fieldset class="mx-goi">
 							<legend><?php skb_e( 'Chọn gói' ); ?> <span><?php echo esc_html( sprintf( skb__( '%d lựa chọn' ), count( $goi ) ) ); ?></span></legend>
 							<div class="goi-list">
 								<?php
 								foreach ( $goi as $i => $g ) :
 									$big = $g['anh'] ? wp_get_attachment_image_src( $g['anh'], 'large' ) : false;
-									$off = ( $g['goc'] > $g['gia'] && $g['gia'] > 0 ) ? '-' . round( 100 - $g['gia'] * 100 / $g['goc'] ) . '%' : '';
+									$p   = $gp[ $i ];
+									$off = $p['off'] ? '-' . $p['off'] . '%' : '';
+									$p_t = $p['ban'] ? $tien( $p['ban'] ) : skb__( 'Liên hệ' );
+									$p_n = $p['niem'] ? $tien( $p['niem'] ) : skb__( 'Liên hệ' );
 									?>
 									<label class="goi">
-										<input type="radio" name="skb_goi" value="<?php echo (int) $i + 1; ?>"<?php checked( $i, $chon ); ?> data-ten="<?php echo esc_attr( $ten_goi( $g['ten'] ) ); ?>" data-gia="<?php echo esc_attr( $g['gia'] ? $tien( $g['gia'] ) : skb__( 'Liên hệ' ) ); ?>" data-goc="<?php echo esc_attr( $g['goc'] > $g['gia'] ? $tien( $g['goc'] ) : '' ); ?>"<?php if ( $big ) : ?> data-img="<?php echo esc_url( $big[0] ); ?>" data-srcset="<?php echo esc_attr( (string) wp_get_attachment_image_srcset( $g['anh'], 'large' ) ); ?>"<?php endif; ?>>
+										<input type="radio" name="skb_goi" value="<?php echo (int) $i + 1; ?>"<?php checked( $i, $chon ); ?> data-ten="<?php echo esc_attr( $ten_goi( $g['ten'] ) ); ?>" data-gia="<?php echo esc_attr( $p_t ); ?>" data-goc="<?php echo esc_attr( $p['goc'] ? $tien( $p['goc'] ) : '' ); ?>"<?php if ( $km && $p_n !== $p_t ) : ?> data-niem="<?php echo esc_attr( $p_n ); ?>"<?php endif; ?><?php if ( $big ) : ?> data-img="<?php echo esc_url( $big[0] ); ?>" data-srcset="<?php echo esc_attr( (string) wp_get_attachment_image_srcset( $g['anh'], 'large' ) ); ?>"<?php endif; ?>>
 										<span class="goi-ten"><?php echo esc_html( $ten_goi( $g['ten'] ) ); ?></span>
-										<span class="goi-gia"><?php echo esc_html( $g['gia'] ? $tien( $g['gia'] ) : skb__( 'Liên hệ' ) ); ?><?php if ( $off ) : ?> <em class="goi-off"><?php echo esc_html( $off ); ?></em><?php endif; ?></span>
+										<span class="goi-gia"><span<?php echo $km ? skb_km_niem_attr( $p_t, $p_n ) : ''; // phpcs:ignore ?>><?php echo esc_html( $p_t ); ?></span><?php if ( $off ) : ?> <em class="goi-off" data-km-an><?php echo esc_html( $off ); ?></em><?php endif; ?></span>
+										<?php if ( $km && $p['goc'] ) : ?><s class="goi-goc" data-km-an><?php echo esc_html( $tien( $p['goc'] ) ); ?></s><?php endif; ?>
 									</label>
 								<?php endforeach; ?>
 							</div>

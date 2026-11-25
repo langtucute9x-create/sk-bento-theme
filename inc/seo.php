@@ -132,6 +132,47 @@ add_filter( 'wp_robots', function ( $r ) {
 	return $r;
 } );
 
+/**
+ * Canonical cho trang không phải bài đơn (bài đơn, trang tĩnh, mẫu xe do lõi WordPress in).
+ * Mỗi bản ngôn ngữ tự trỏ chính nó (bộ lọc home_url / post_type_archive_link / term_link trong inc/da-ngu.php
+ * đã thêm tiền tố /en/...), khớp hreflang. Bỏ mọi tham số: /mau-xe/?uu-dai=1 → /mau-xe/
+ * (trang đó còn có noindex,follow ở inc/khuyen-mai.php).
+ */
+function skb_seo_canonical() {
+	if ( is_singular() || is_404() || is_search() ) {
+		return '';
+	}
+	$u = '';
+	if ( is_front_page() ) {
+		$u = home_url( '/' );
+	} elseif ( is_home() ) {
+		$pf = (int) get_option( 'page_for_posts' );
+		$u  = $pf ? get_permalink( $pf ) : '';
+	} elseif ( is_post_type_archive( 'mau_xe' ) ) {
+		$u = get_post_type_archive_link( 'mau_xe' );
+	} elseif ( is_post_type_archive( 'dai_ly' ) ) {
+		$u = get_post_type_archive_link( 'dai_ly' );
+	} elseif ( is_tax( 'hang_xe' ) || is_category() || is_tag() ) {
+		$l = get_term_link( get_queried_object() );
+		$u = is_wp_error( $l ) ? '' : $l;
+	}
+	if ( ! $u ) {
+		return '';
+	}
+	$u = strtok( (string) $u, '?#' );
+	if ( is_paged() ) {
+		$u = trailingslashit( $u ) . 'page/' . (int) get_query_var( 'paged' ) . '/';
+	}
+	return $u;
+}
+
+add_action( 'wp_head', function () {
+	$u = skb_seo_canonical();
+	if ( '' !== $u ) {
+		printf( '<link rel="canonical" href="%s">' . "\n", esc_url( $u ) );
+	}
+}, 1 );
+
 add_action( 'wp_head', function () {
 	if ( is_404() || is_search() ) {
 		return;
@@ -141,7 +182,7 @@ add_action( 'wp_head', function () {
 		printf( '<meta name="description" content="%s">' . "\n", esc_attr( $d ) );
 	}
 	$title = wp_get_document_title();
-	$url   = is_singular() ? get_permalink( get_queried_object_id() ) : ( is_front_page() ? home_url( '/' ) : '' );
+	$url   = is_singular() ? get_permalink( get_queried_object_id() ) : skb_seo_canonical();
 	$img   = '';
 	if ( is_singular() && has_post_thumbnail( get_queried_object_id() ) ) {
 		$src = wp_get_attachment_image_src( get_post_thumbnail_id( get_queried_object_id() ), 'large' );

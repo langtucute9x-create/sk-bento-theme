@@ -188,6 +188,12 @@
     else if (a.classList.contains('dir')) { var d = a.closest('.dealer'); ev('chi_duong', d ? (d.querySelector('.name') || d).textContent.trim() : ''); }
     else if (/catalog\.sklight\.vn/i.test(href)) ev('mo_catalog', pageName);
     else if (a.classList.contains('vn-pin') || a.classList.contains('vn-chip')) ev('ban_do', a.getAttribute('data-tinh') || '');
+    /* 0.18.1: nút "Xem ưu đãi" của chương trình khuyến mại (inc/khuyen-mai.php, data-km-nut = thanh | banner | banner-anh | khoi) */
+    if (a.hasAttribute('data-km-nut')) {
+      var vt = a.getAttribute('data-km-nut');
+      ev('uu_dai', vt + ' · ' + trang());
+      try { (window.dataLayer = window.dataLayer || []).push({ event: 'xem_uu_dai', vi_tri: vt, trang: trang() }); } catch (e2) {}
+    }
   }, true);
   document.addEventListener('change', function (e) {
     var r = e.target;
@@ -244,6 +250,8 @@
     if (!xeLoad) xeLoad = fetch(src, { credentials: 'omit' }).then(function (r) { return r.json(); }).then(function (d) {
       xeData = (Array.isArray(d) ? d : []).map(function (x) {
         x._f = flat(x.t + ' ' + x.k); x._w = fold(x.t + ' ' + x.k);
+        /* 0.18: bản Việt ngoài chương trình khuyến mại thì lấy giá niêm yết (pg); kết quả tìm kiếm dùng chung cache nên mang cả hai giá */
+        if ((!K.lang || K.lang === 'vi') && x.pg && (!window.SKB_KM || doc.classList.contains('km-het'))) x.p = x.pg;
         if (K.lang && K.lang !== 'vi') { x.u = L(x.u); if (x.p) { var pn = parseInt(String(x.p).replace(/\D/g, ''), 10); if (pn) x.p = pn.toLocaleString(K.hl || 'en').replace(/[\s\u00a0\u202f]/g, K.tach || ',') + ' ₫'; } if (x.h) x.t = x.t.indexOf('Hãng ') === 0 ? T('Hãng') + ' ' + T(x.t.slice(5)) : T(x.t); }
         return x;
       });
@@ -295,5 +303,50 @@
     });
     list.addEventListener('mousedown', function (e) { var li = e.target.closest('[data-i]'); if (li) { e.preventDefault(); go(+li.getAttribute('data-i')); } });
     document.addEventListener('click', function (e) { if (!box.contains(e.target)) close(); });
+  });
+})();
+
+/* 0.18: chương trình khuyến mại (inc/khuyen-mai.php). Đồng hồ đếm ngược, dưới 24 giờ đổi màu và hiện "Sắp kết thúc",
+   hết giờ thì ẩn banner và đưa giá về niêm yết ngay trên trang (kể cả trang đang nằm trong bộ nhớ đệm), nút đóng nhớ theo ảnh. */
+(function () {
+  var K = window.SKB_KM, doc = document.documentElement;
+  if (!K) return;
+  var het = function () {
+    if (doc.classList.contains('km-het-xong')) return;
+    doc.classList.add('km-het', 'km-het-xong');
+    document.querySelectorAll('[data-km-niem]').forEach(function (el) { el.textContent = el.getAttribute('data-km-niem'); });
+    var chon = null;
+    document.querySelectorAll('input[data-niem]').forEach(function (r) { r.dataset.gia = r.dataset.niem; r.dataset.goc = ''; if (r.checked) chon = r; });
+    if (chon) chon.dispatchEvent(new Event('change', { bubbles: true }));
+    document.querySelectorAll('[data-km-an]').forEach(function (el) { el.hidden = true; });
+  };
+  var dem = [].slice.call(document.querySelectorAll('[data-km-dem]'));
+  var hai = function (n) { return (n < 10 ? '0' : '') + n; };
+  var gap = false;
+  var tick = function () {
+    var con = Math.floor((K.kt - (Date.now() + (K.lech || 0))) / 1000);
+    if (con <= 0) { het(); return false; }
+    var d = Math.floor(con / 86400), h = Math.floor(con % 86400 / 3600), m = Math.floor(con % 3600 / 60), s = con % 60;
+    dem.forEach(function (el) {
+      if (el.getAttribute('data-km-dem') === 'o') {
+        var v = [String(d), hai(h), hai(m), hai(s)];
+        el.querySelectorAll('[data-km-o]').forEach(function (b) { var t = v[+b.getAttribute('data-km-o')]; if (b.textContent !== t) b.textContent = t; });
+      } else el.textContent = (d ? d + ' ngày ' : '') + hai(h) + ':' + hai(m) + ':' + hai(s);
+    });
+    if (!gap && con < 86400) {
+      gap = true;
+      document.querySelectorAll('[data-km-banner]').forEach(function (el) { el.classList.add('km-gap'); });
+      document.querySelectorAll('[data-km-sap]').forEach(function (el) { el.hidden = false; });
+      document.querySelectorAll('[data-km-con]').forEach(function (el) { el.hidden = true; });
+    }
+    return true;
+  };
+  if (doc.classList.contains('km-het') || !tick()) { het(); return; }
+  var t = setInterval(function () { if (!tick()) clearInterval(t); }, 1000);
+  document.addEventListener('click', function (e) {
+    var x = e.target.closest && e.target.closest('[data-km-dong]');
+    if (!x) return;
+    doc.classList.add('km-dong');
+    try { localStorage.setItem('skb_km_dong', K.anh); } catch (er) {}
   });
 })();

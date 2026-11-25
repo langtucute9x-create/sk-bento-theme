@@ -62,11 +62,21 @@ if ( is_singular( 'mau_xe' ) ) :
 </nav>
 	<?php else :
 		$skb_xe      = get_the_title() . ( $skb_chon >= 0 ? ' — ' . $skb_goi[ $skb_chon ]['ten'] : '' );
-		$skb_bar_txt = $skb_chon >= 0 ? $skb_goi[ $skb_chon ]['ten'] . ' · ' . ( $skb_goi[ $skb_chon ]['gia'] ? skb_tien( $skb_goi[ $skb_chon ]['gia'] ) : 'Liên hệ' ) : ( $skb_gia_bar ? 'Từ ' . $skb_gia_bar . ( $skb_goi ? ' · ' . count( $skb_goi ) . ' gói' : '' ) : '' );
+		// giá theo chương trình khuyến mại; data-km-niem là chữ ngoài chương trình để JS đổi lại khi hết giờ
+		$skb_bar_f   = function ( $km ) use ( $skb_goi, $skb_chon ) {
+			if ( $skb_chon >= 0 ) {
+				$p = skb_km_gia( $skb_goi[ $skb_chon ]['gia'], $skb_goi[ $skb_chon ]['goc'], $km );
+				return $skb_goi[ $skb_chon ]['ten'] . ' · ' . ( $p['ban'] ? skb_tien( $p['ban'] ) : 'Liên hệ' );
+			}
+			$p = skb_km_tu( get_the_ID(), $km );
+			return $p ? 'Từ ' . skb_tien( $p['ban'] ) . ( $skb_goi ? ' · ' . count( $skb_goi ) . ' gói' : '' ) : '';
+		};
+		$skb_bar_txt = $skb_bar_f( null );
+		$skb_bar_km  = skb_km_niem_attr( $skb_bar_txt, $skb_bar_f( false ) );
 		?>
 <nav class="mbar mbar-xe" aria-label="Thao tác nhanh">
 	<a class="mbar-call" href="tel:<?php echo esc_attr( skb_tel( $hotline ) ); ?>" aria-label="Gọi <?php echo esc_attr( $hotline ); ?>"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg></a>
-	<a class="main" data-book href="<?php echo esc_url( add_query_arg( 'xe', rawurlencode( $skb_xe ), home_url( '/dat-lich/' ) ) ); ?>"><span><?php echo $skb_chon >= 0 ? 'Đặt lịch lắp gói này' : 'Đặt lịch lắp mẫu này'; ?></span><?php if ( $skb_bar_txt ) : ?><small data-gia-bar><?php echo esc_html( $skb_bar_txt ); ?></small><?php endif; ?></a>
+	<a class="main" data-book href="<?php echo esc_url( add_query_arg( 'xe', rawurlencode( $skb_xe ), home_url( '/dat-lich/' ) ) ); ?>"><span><?php echo $skb_chon >= 0 ? 'Đặt lịch lắp gói này' : 'Đặt lịch lắp mẫu này'; ?></span><?php if ( $skb_bar_txt ) : ?><small data-gia-bar<?php echo $skb_bar_km; // phpcs:ignore ?>><?php echo esc_html( $skb_bar_txt ); ?></small><?php endif; ?></a>
 </nav>
 	<?php endif; ?>
 <?php elseif ( $skb_ngoai ) : ?>
