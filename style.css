@@ -889,3 +889,62 @@ a.hst-card:hover{color:var(--text);background:var(--tile-2);border-color:rgba(25
 }
 .dl-tuyen{margin-top:32px;padding-top:20px;border-top:1px solid var(--line)}
 .dl-tuyen a{color:var(--link);font-weight:600;text-decoration:underline;text-underline-offset:3px}
+
+/* ===== 0.18: chương trình khuyến mại (inc/khuyen-mai.php), chỉ bản tiếng Việt =====
+   Thanh trên cùng cao cố định 40px nằm trong luồng trang (không đẩy bố cục khi đóng vì đóng xong cả trang dịch lên đều).
+   html.km-dong: khách đã đóng thanh (nhớ theo ảnh). html.km-het: hết giờ, JS ẩn banner và đưa giá về niêm yết. */
+body.km-co{--km-h:40px}
+.km-dong body.km-co,.km-het body.km-co{--km-h:0px}
+.km-dong .km-thanh,.km-het [data-km-banner],.km-het [data-km-an]{display:none!important}
+.km-thanh{position:relative;z-index:55;height:40px;overflow:hidden;background:var(--grad-cta);color:var(--white);font-size:13px;line-height:40px;white-space:nowrap}
+.km-thanh-in{max-width:1320px;margin:0 auto;padding:0 48px 0 32px;display:flex;align-items:center;justify-content:center;gap:14px;height:40px}
+.km-thanh-t{margin:0;overflow:hidden;text-overflow:ellipsis}
+.km-thanh-t strong{font-weight:700}
+.km-thanh-con{font-variant-numeric:tabular-nums;opacity:.95}
+.km-thanh .km-dem{font-weight:700}
+.km-thanh-nut{flex:none;height:26px;line-height:26px;padding:0 12px;border-radius:999px;background:rgba(255,255,255,.18);color:var(--white);font-weight:600}
+.km-thanh-nut:hover{background:rgba(255,255,255,.3);color:var(--white)}
+.km-thanh-x{position:absolute;right:8px;top:6px;width:28px;height:28px;display:grid;place-items:center;border:0;border-radius:50%;background:transparent;color:var(--white);cursor:pointer}
+.km-thanh-x:hover{background:rgba(255,255,255,.18)}
+.km-thanh.km-gap{background:linear-gradient(135deg,#9B1030,#DF1C4E 60%,#F49B3F)}
+.km-gap .km-sap{font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.km-co.home .site-header:not(.is-stuck){top:var(--km-h)}
+.admin-bar.km-co.home .site-header:not(.is-stuck){top:calc(32px + var(--km-h))}
+@media (max-width:760px){
+  .km-thanh{font-size:12px}
+  .km-thanh-in{padding:0 40px 0 12px;gap:8px;justify-content:flex-start}
+  .km-pc,.km-thanh .km-con{display:none}
+  .km-thanh-nut{padding:0 10px}
+  .admin-bar.km-co.home .site-header:not(.is-stuck){top:calc(46px + var(--km-h))}
+}
+@media (max-width:380px){ .km-thanh-con{display:none} }
+
+/* Banner trang chủ: ảnh + đồng hồ chữ thật + nút */
+.km-bang{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:10px;margin-top:10px}
+.km-bang-chu-only{grid-template-columns:1fr}
+.km-bang-anh{display:block;border-radius:24px;overflow:hidden;background:var(--tile);aspect-ratio:16/5}
+.km-bang-anh img{display:block;width:100%;height:100%;object-fit:cover}
+.km-bang-chu{border-radius:24px;background:var(--tile);border:1px solid var(--line);padding:24px;display:flex;flex-direction:column;justify-content:center;gap:16px}
+.km-bang-t{margin:0;font-size:15px;color:var(--soft)}
+.km-bang.km-gap .km-bang-chu{border-color:rgba(223,28,78,.6);box-shadow:0 0 0 1px rgba(223,28,78,.25) inset}
+.km-bang.km-gap .km-sap{color:#FF5C7F}
+.km-dem-o{display:flex;gap:8px;font-variant-numeric:tabular-nums}
+.km-o{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;padding:10px 4px;border-radius:14px;background:var(--tile-2)}
+.km-o b{font-size:26px;line-height:1.1;color:var(--white)}
+.km-o small{font-size:11px;color:var(--muted)}
+.km-gap .km-o b{color:#FF5C7F}
+.km-bang-nut{align-self:stretch;text-align:center}
+@media (max-width:900px){
+  .km-bang{grid-template-columns:1fr}
+  .km-bang-anh{aspect-ratio:4/3}
+}
+
+/* Khối "Mẫu xe đang ưu đãi", trang ?uu-dai=1, giá trên thẻ và gói */
+.km-xe .post-card h3{margin:0 0 6px;font-size:17px;line-height:1.35}
+.km-ds{margin:0 0 20px}
+.km-ds-t{margin:0;font-size:15px;color:var(--soft);font-variant-numeric:tabular-nums}
+.km-ds .km-dem{font-weight:700;color:var(--white)}
+.km-ds.km-gap .km-sap{color:#FF5C7F}
+.mx-card-price s,.goi-goc{color:var(--muted);font-size:12px;margin-left:4px}
+.km-off{font-style:normal;font-size:11px;font-weight:700;color:var(--white);background:var(--brand-2d);border-radius:999px;padding:1px 7px;margin-left:4px}
+.goi-goc{display:block;margin:2px 0 0}
