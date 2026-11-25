@@ -56,6 +56,7 @@ add_action( 'init', function () {
 		'_skb_km_bat_dau'    => array( 'string', '', 'skb_km_chuan_gio', 'Giờ bắt đầu, giờ Việt Nam, dạng 2026-12-01 00:00:00' ),
 		'_skb_km_ket_thuc'   => array( 'string', '', 'skb_km_chuan_gio', 'Giờ kết thúc, giờ Việt Nam, dạng 2026-12-25 23:59:59' ),
 		'_skb_km_bat'        => array( 'boolean', false, 'rest_sanitize_boolean', 'Bật chương trình' ),
+		'_skb_km_qua'        => array( 'string', '', 'skb_km_chuan_qua', 'Quà tặng hoặc ưu đãi riêng của đợt này, mỗi dòng một ý, tối đa 6 dòng' ),
 	);
 	foreach ( $truong as $k => $t ) {
 		register_post_meta( 'khuyen_mai', $k, array(
@@ -113,6 +114,23 @@ function skb_km_thu() {
 	return $t;
 }
 
+/** Quà của đợt: tối đa 6 dòng, mỗi dòng tối đa 120 ký tự, bỏ dòng trống và thẻ HTML */
+function skb_km_chuan_qua( $v ) {
+	$dong = preg_split( '/\r\n|\r|\n/', (string) $v );
+	$out  = array();
+	foreach ( $dong as $d ) {
+		$d = trim( wp_strip_all_tags( (string) $d ) );
+		if ( '' === $d ) {
+			continue;
+		}
+		$out[] = function_exists( 'mb_substr' ) ? mb_substr( $d, 0, 120 ) : substr( $d, 0, 120 );
+		if ( count( $out ) >= 6 ) {
+			break;
+		}
+	}
+	return implode( "\n", $out );
+}
+
 /** Giờ hiện tại dùng để so chương trình. Bộ lọc `skb_km_bay_gio` cho phép giả giờ khi kiểm thử. */
 function skb_km_bay_gio() {
 	$thu = skb_km_thu();
@@ -148,6 +166,7 @@ function skb_km_ds() {
 			'kt'  => $kt,
 			'pc'  => (int) get_post_meta( $p->ID, '_skb_km_anh_pc', true ),
 			'mb'  => (int) get_post_meta( $p->ID, '_skb_km_anh_mobile', true ),
+			'qua' => skb_km_chuan_qua( get_post_meta( $p->ID, '_skb_km_qua', true ) ),
 		);
 	}
 	set_transient( 'skb_km_ds', $out, DAY_IN_SECONDS );
@@ -524,6 +543,72 @@ function skb_km_bang_trang_chu() {
 	<?php
 }
 
+/**
+ * "Hộp quà ưu đãi" ở trang mẫu xe (bản Việt, chỉ khi có chương trình đang chạy).
+ * Không phải rút thăm: mọi khách trong đợt nhận đúng ưu đãi của gói đang chọn (mức giảm tính từ giá niêm yết và giá bán của gói,
+ * cộng quà ghi ở chương trình). Khách bấm để mở, kèm mã ưu đãi (KM<chương trình>-<mẫu xe>-<số gói>) để đọc cho SK Light khi báo giá.
+ * $gp = mảng skb_km_gia() của từng gói, cùng thứ tự với $goi.
+ */
+function skb_km_hop_qua( $xe_id, $goi, $gp ) {
+	$k = skb_km_dang_chay();
+	if ( ! $k || ! $goi ) {
+		return;
+	}
+	$qua  = isset( $k['qua'] ) ? preg_split( '/\n/', (string) $k['qua'], -1, PREG_SPLIT_NO_EMPTY ) : array();
+	$co_g = false;
+	foreach ( $gp as $p ) {
+		if ( ! empty( $p['goc'] ) && ! empty( $p['off'] ) ) {
+			$co_g = true;
+			break;
+		}
+	}
+	if ( ! $co_g && ! $qua ) {
+		return;
+	}
+	?>
+	<section class="km-hq" data-km-an data-km-hq aria-label="Hộp quà ưu đãi">
+		<button type="button" class="km-hq-nut" data-km-hq-mo aria-expanded="false" aria-controls="km-hq-nd">
+			<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7M7.5 8a2.5 2.5 0 0 1 0-5C10 3 12 8 12 8s2-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg>
+			<span>Mở hộp quà ưu đãi</span>
+		</button>
+		<div class="km-hq-nd" id="km-hq-nd" hidden>
+			<p class="km-hq-chua" data-hq="0">Chọn một gói ở trên để xem ưu đãi của gói đó.</p>
+			<?php foreach ( $goi as $i => $g ) : $p = isset( $gp[ $i ] ) ? $gp[ $i ] : array( 'ban' => 0, 'goc' => 0, 'off' => 0 ); ?>
+				<div class="km-hq-ct" data-hq="<?php echo (int) $i + 1; ?>" hidden>
+					<p class="km-hq-ten"><?php echo esc_html( $g['ten'] ); ?></p>
+					<?php if ( $p['goc'] && $p['off'] ) : ?>
+						<p class="km-hq-gia"><strong>Giảm <?php echo (int) $p['off']; ?>%</strong>: còn <strong><?php echo esc_html( skb_tien( $p['ban'] ) ); ?></strong> <s><?php echo esc_html( skb_tien( $p['goc'] ) ); ?></s><br>Tiết kiệm <?php echo esc_html( skb_tien( $p['goc'] - $p['ban'] ) ); ?></p>
+					<?php endif; ?>
+					<?php if ( $qua ) : ?>
+						<ul class="km-hq-qua"><?php foreach ( $qua as $q ) { echo '<li>' . esc_html( $q ) . '</li>'; } ?></ul>
+					<?php elseif ( ! ( $p['goc'] && $p['off'] ) ) : ?>
+						<p>Gói này chưa có ưu đãi riêng trong đợt này.</p>
+					<?php endif; ?>
+					<p class="km-hq-ma">Mã ưu đãi: <code><?php echo esc_html( 'KM' . (int) $k['id'] . '-' . (int) $xe_id . '-' . ( (int) $i + 1 ) ); ?></code> Đọc mã này cho SK Light khi nhận báo giá để được áp đúng ưu đãi.</p>
+				</div>
+			<?php endforeach; ?>
+			<p class="km-hq-han"><span>Ưu đãi của đợt này còn</span><?php echo skb_km_dong_ho( $k, 'gon' ); // phpcs:ignore ?></p>
+			<p class="km-hq-ghi">Ưu đãi dành cho mọi khách trong đợt này, không phải rút thăm. Đợt sau có thể có quà và mức giảm khác.</p>
+		</div>
+	</section>
+	<script>
+	(function () {
+		var b = document.querySelector('[data-km-hq]'); if (!b) return;
+		var nut = b.querySelector('[data-km-hq-mo]'), nd = b.querySelector('.km-hq-nd');
+		var hien = function () {
+			var r = document.querySelector('.mx-goi input:checked'), v = r ? r.value : '0';
+			b.querySelectorAll('[data-hq]').forEach(function (c) { c.hidden = c.getAttribute('data-hq') !== v; });
+		};
+		nut.addEventListener('click', function () {
+			var mo = nd.hidden; nd.hidden = !mo; nut.setAttribute('aria-expanded', mo ? 'true' : 'false'); b.classList.toggle('mo', mo);
+			if (mo) { hien(); try { if (window.skbEv) window.skbEv('uu_dai', 'hop-qua · ' + location.pathname); } catch (e) {} }
+		});
+		document.addEventListener('change', function (e) { if (!nd.hidden && e.target.matches && e.target.matches('.mx-goi input')) hien(); });
+	})();
+	</script>
+	<?php
+}
+
 /** Thẻ mẫu xe (khối trang chủ và danh sách ?uu-dai=1) */
 function skb_km_the_xe( $id, $h = 'h3' ) {
 	$h = in_array( $h, array( 'h2', 'h3' ), true ) ? $h : 'h3';
@@ -635,6 +720,10 @@ function skb_km_box( $post ) {
 		</tr>
 		<?php endforeach; ?>
 		<tr>
+			<th scope="row"><label for="skb-km-qua">Quà và ưu đãi của đợt</label></th>
+			<td><textarea id="skb-km-qua" name="skb_km_qua" rows="4" cols="60" maxlength="760" placeholder="Mỗi dòng một ý, ví dụ: Tặng kèm ..."><?php echo esc_textarea( (string) $v( '_skb_km_qua' ) ); ?></textarea><p class="description">Hiện trong "Hộp quà ưu đãi" ở trang mẫu xe, bên cạnh mức giảm của gói. Chỉ ghi những gì thật sự giao cho khách trong đợt này (tối đa 6 dòng, mỗi dòng 120 ký tự). Để trống thì hộp quà chỉ hiện mức giảm.</p></td>
+		</tr>
+		<tr>
 			<th scope="row"><label for="skb-km-bd">Bắt đầu</label></th>
 			<td><input id="skb-km-bd" type="datetime-local" step="1" name="skb_km_bat_dau" value="<?php echo esc_attr( $gio( $v( '_skb_km_bat_dau' ) ) ); ?>"> <span class="description">ví dụ 01/12/2026 00:00:00</span></td>
 		</tr>
@@ -692,6 +781,7 @@ add_action( 'save_post_khuyen_mai', function ( $post_id ) {
 		update_post_meta( $post_id, $k, skb_km_chuan_gio( sanitize_text_field( wp_unslash( $_POST[ ltrim( $k, '_' ) ] ?? '' ) ) ) ); // phpcs:ignore
 	}
 	update_post_meta( $post_id, '_skb_km_bat', ! empty( $_POST['skb_km_bat'] ) ); // phpcs:ignore
+	update_post_meta( $post_id, '_skb_km_qua', skb_km_chuan_qua( sanitize_textarea_field( wp_unslash( $_POST['skb_km_qua'] ?? '' ) ) ) ); // phpcs:ignore
 }, 5 );
 
 add_filter( 'manage_khuyen_mai_posts_columns', function ( $c ) {

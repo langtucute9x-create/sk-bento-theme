@@ -950,3 +950,22 @@ body.km-co{--km-h:40px}
 .mx-card-price s,.goi-goc{color:var(--muted);font-size:12px;margin-left:4px}
 .km-off{font-style:normal;font-size:11px;font-weight:700;color:var(--white);background:var(--brand-2d);border-radius:999px;padding:1px 7px;margin-left:4px}
 .goi-goc{display:block;margin:2px 0 0}
+
+/* Hộp quà ưu đãi ở trang mẫu xe (0.19): bấm để mở, nội dung theo gói đang chọn */
+.km-hq{margin:16px 0}
+.km-hq-nut{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:48px;padding:0 18px;border:0;border-radius:999px;background:var(--grad-cta);color:var(--white);font:inherit;font-weight:700;cursor:pointer}
+.km-hq-nut:hover{filter:brightness(1.08)}
+.km-hq-nut:focus-visible{outline:2px solid var(--white);outline-offset:3px}
+.km-hq.mo .km-hq-nut{background:var(--tile-2);border:1px solid var(--line)}
+.km-hq-nd{margin-top:10px;padding:16px 18px;border-radius:18px;background:var(--tile);border:1px solid var(--line);font-size:14px;line-height:1.55;color:var(--soft)}
+.km-hq-nd p{margin:0 0 10px}
+.km-hq-ten{font-weight:700;color:var(--white)}
+.km-hq-gia strong{color:var(--white)}
+.km-hq-gia s{color:var(--muted)}
+.km-hq-qua{margin:0 0 10px;padding-left:20px}
+.km-hq-qua li{margin:0 0 4px}
+.km-hq-ma code{display:inline-block;padding:1px 8px;border-radius:8px;background:var(--tile-2);color:var(--white);font-weight:700;letter-spacing:.02em}
+.km-hq-han{font-variant-numeric:tabular-nums}
+.km-hq-han .km-dem{font-weight:700;color:var(--white);margin-left:6px}
+.km-hq-ghi{margin:0;font-size:12px;color:var(--muted)}
+.km-hq [hidden]{display:none!important}

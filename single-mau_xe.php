@@ -98,6 +98,7 @@ while ( have_posts() ) :
 							<?php endforeach; ?>
 							<p class="goi-ct goi-ct-chua" data-ct="0"<?php echo $chon >= 0 ? ' hidden' : ''; ?>><?php echo esc_html( $ngoai ? skb__( 'Chọn một gói để xem giá và ảnh.' ) : 'Chọn một gói để xem chi tiết các món đi kèm, giá và ảnh.' ); ?></p>
 						</fieldset>
+						<?php if ( $km && function_exists( 'skb_km_hop_qua' ) ) { skb_km_hop_qua( get_the_ID(), $goi, $gp ); } ?>
 					<?php elseif ( $gia ) : ?>
 						<p class="mx-price"><?php skb_e( 'Giá từ' ); ?> <strong><?php echo esc_html( $ngoai ? skb_ngu_tien( (float) get_post_meta( get_the_ID(), '_skb_gia', true ) ) : $gia ); ?></strong> <span><?php echo esc_html( $ngoai ? skb__( 'Giá bán tại Việt Nam, gồm VAT' ) : 'đã gồm VAT' ); ?></span></p>
 					<?php else : ?>
