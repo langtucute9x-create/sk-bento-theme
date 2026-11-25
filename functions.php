@@ -71,6 +71,7 @@ require_once get_template_directory() . '/inc/khuyen-mai.php';
 require_once get_template_directory() . '/inc/catalog.php';
 /* SEO: ô SEO trong trình soạn bài + thẻ meta / Open Graph */
 require_once get_template_directory() . '/inc/seo.php';
+require_once get_template_directory() . '/inc/schema-san-pham.php';
 
 /* Giá "từ" của mẫu xe đang hiển thị (bản Việt: theo chương trình khuyến mại): "8.700.000đ" hoặc rỗng */
 function skb_gia( $post_id = 0 ) {
