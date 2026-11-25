@@ -53,6 +53,7 @@ $dealer_q    = $ngoai ? null : new WP_Query( array( 'post_type' => 'dai_ly', 'po
 	</div>
 </section>
 
+<?php if ( ! $ngoai && function_exists( 'skb_km_bang_trang_chu' ) ) { skb_km_bang_trang_chu(); } ?>
 <?php if ( ! $ngoai ) { get_template_part( 'template-parts/trang-chu-vi', null, array( 'khoi' => 'noi-lo' ) ); } ?>
 <section class="features" aria-label="<?php echo esc_attr( skb__( 'Ưu điểm' ) ); ?>">
 	<div class="feat">
@@ -77,6 +78,7 @@ $dealer_q    = $ngoai ? null : new WP_Query( array( 'post_type' => 'dai_ly', 'po
 	</div>
 </section>
 <?php if ( ! $ngoai ) { get_template_part( 'template-parts/trang-chu-vi', null, array( 'khoi' => 'so-lieu' ) ); } ?>
+<?php if ( ! $ngoai && function_exists( 'skb_km_khoi_trang_chu' ) ) { skb_km_khoi_trang_chu( 6 ); } ?>
 
 <section class="sec" aria-labelledby="gal-title">
 	<div class="sec-head">

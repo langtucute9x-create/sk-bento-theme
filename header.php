@@ -15,6 +15,7 @@ $skb_ngoai = function_exists( 'skb_ngu_ngoai' ) && skb_ngu_ngoai();
 <body <?php body_class(); ?>>
 <?php wp_body_open(); ?>
 <a class="skip-link screen-reader-text" href="#noi-dung"><?php skb_e( 'Bỏ qua đến nội dung' ); ?></a>
+<?php if ( function_exists( 'skb_km_thanh' ) ) { skb_km_thanh(); } ?>
 <div class="wrap">
 <header class="site-header">
 	<a class="site-logo" href="<?php echo esc_url( home_url( '/' ) ); ?>" aria-label="<?php echo esc_attr( get_bloginfo( 'name' ) . ' - ' . skb__( 'Trang chủ' ) ); ?>">

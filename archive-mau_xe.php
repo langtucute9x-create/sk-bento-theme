@@ -7,10 +7,11 @@ $term = is_tax( 'hang_xe' ) ? get_queried_object() : null;
 ?>
 <div class="page-wrap">
 	<section class="page-card">
-		<h1><?php echo $term ? esc_html( sprintf( skb__( 'Đèn nội thất cho %s' ), skb__( $term->name ) ) ) : esc_html( skb__( 'Chọn dòng xe' ) ); ?></h1>
+		<h1><?php echo $term ? esc_html( sprintf( skb__( 'Đèn nội thất cho %s' ), skb__( $term->name ) ) ) : esc_html( ( isset( $_GET['uu-dai'] ) && ! skb_ngu_ngoai() && function_exists( 'skb_km_dang_chay' ) && skb_km_dang_chay() ) ? 'Mẫu xe đang ưu đãi' : skb__( 'Chọn dòng xe' ) ); // phpcs:ignore ?></h1>
 		<?php skb_tim_xe_box( 'page' ); ?>
 		<?php if ( ! $term ) : ?>
-			<?php get_template_part( 'template-parts/brand-grid' ); ?>
+			<?php $skb_km_ds = isset( $_GET['uu-dai'] ) && ! skb_ngu_ngoai() && function_exists( 'skb_km_trang_uu_dai' ) ? skb_km_trang_uu_dai() : false; // phpcs:ignore ?>
+			<?php if ( ! $skb_km_ds ) { get_template_part( 'template-parts/brand-grid' ); } ?>
 		<?php else : ?>
 			<?php get_template_part( 'template-parts/brand-chips' ); ?>
 			<?php if ( have_posts() ) : ?>
@@ -18,7 +19,7 @@ $term = is_tax( 'hang_xe' ) ? get_queried_object() : null;
 					<?php while ( have_posts() ) : the_post(); ?>
 						<a class="post-card" href="<?php the_permalink(); ?>">
 							<div class="thumb"><?php if ( has_post_thumbnail() ) { the_post_thumbnail( 'medium_large', array( 'loading' => 'lazy' ) ); } ?></div>
-							<div class="body"><h2><?php echo esc_html( skb_ngu_ngoai() ? skb_ngu_tieu_de_xe() : get_the_title() ); ?></h2><?php $g = skb_ngu_ngoai() ? skb_ngu_tien( (float) get_post_meta( get_the_ID(), '_skb_gia', true ) ) : skb_gia(); if ( $g ) : ?><p class="mx-card-price"><?php skb_e( 'Từ' ); ?> <strong><?php echo esc_html( $g ); ?></strong></p><?php endif; ?></div>
+							<div class="body"><h2><?php echo esc_html( skb_ngu_ngoai() ? skb_ngu_tieu_de_xe() : get_the_title() ); ?></h2><?php if ( skb_ngu_ngoai() ) : $g = skb_ngu_tien( (float) get_post_meta( get_the_ID(), '_skb_gia', true ) ); if ( $g ) : ?><p class="mx-card-price"><?php skb_e( 'Từ' ); ?> <strong><?php echo esc_html( $g ); ?></strong></p><?php endif; else : echo skb_km_gia_the( get_the_ID() ); endif; // phpcs:ignore ?></div>
 						</a>
 					<?php endwhile; ?>
 				</div>
