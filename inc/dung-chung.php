@@ -1,14 +1,19 @@
 <?php
 /**
- * Dòng sản phẩm "Dùng chung" (lắp được cho mọi dòng xe) — 0.24.0.
- * - Hai loại: S2Pro và S3Pro, mỗi loại có nhiều gói theo số chi tiết. Nhập MỘT lần ở Mẫu xe › Dòng dùng chung
+ * Dòng sản phẩm "Dùng chung" (lắp được cho mọi dòng xe) và bố cục "chọn kiểu lắp" ở trang mẫu xe — 0.25.0.
+ * - Hai loại dùng chung: S2Pro và S3Pro, mỗi loại nhiều gói theo số chi tiết. Nhập MỘT lần ở Mẫu xe › Dòng dùng chung
  *   (option skb_dung_chung); chưa nhập thì dùng bảng giá lấy từ catalog.sklight.vn ngày 27/11/2026.
- * - Trang mẫu xe (bản tiếng Việt):
- *     · xe có gói ốp riêng  → công tắc "Ốp theo xe | Dùng chung"; trong Dùng chung chọn S2Pro / S3Pro rồi chọn số chi tiết;
- *     · xe chỉ có các gói dùng chung S2Pro (mọi gói từ 10 chi tiết của xe đều khớp bảng S2Pro) → công tắc "S2Pro | S3Pro":
- *       S2Pro là các gói đang nhập ở xe đó (giữ nguyên thứ tự để mã ưu đãi và liên kết ?goi= không đổi), S3Pro lấy từ bảng chung.
- * - Gói dùng chung in ra dưới dạng nút chọn cùng nhóm với gói của xe (name="skb_goi"), nên đoạn script sẵn có của trang
- *   tự đổi giá, nút Đặt lịch và thanh giá. Giá theo đúng luật khuyến mại (skb_km_gia). Catalog là nguồn giá đúng.
+ * - Trang mẫu xe (bản tiếng Việt) có các thẻ kiểu lắp ngang hàng:
+ *     · xe có gói ốp riêng → 3 thẻ: Ốp theo xe | S2Pro | S3Pro;
+ *     · xe chỉ có các gói dùng chung S2Pro (mọi gói từ 10 chi tiết của xe đều khớp bảng S2Pro) → 2 thẻ: S2Pro | S3Pro,
+ *       S2Pro là các gói đang nhập ở xe đó (giữ thứ tự để mã ưu đãi và liên kết ?goi= không đổi), S3Pro lấy từ bảng chung.
+ * - Gói dùng chung in ra cùng nhóm nút chọn với gói của xe (name="skb_goi"), nên script sẵn có của trang tự đổi giá và
+ *   nút Đặt lịch. Giá theo đúng luật khuyến mại (skb_km_gia). Catalog là nguồn giá đúng.
+ * - Dưới phần chọn: khối "Về kiểu … trên <xe>" (điểm khác biệt + các món trong gói đang chọn) và bảng so sánh các kiểu.
+ *   Toàn bộ chữ in sẵn trong HTML (Google và các trình thu thập AI không chạy script vẫn đọc được); script chỉ ẩn/hiện.
+ * - Thành phần từng gói dùng chung đếm theo ẢNH trong file báo giá T12-2026 của chủ (xem docs/dung-chung-thanh-phan-goi.md).
+ * - Mỗi xe có thể gắn ảnh riêng cho S2Pro và S3Pro (khung "Ảnh dòng dùng chung trên xe này"): chọn thẻ nào thì bộ ảnh đổi theo.
+ * Script: khối cuối assets/main.js.
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -18,7 +23,7 @@ function skb_dc_mac_dinh() {
 	return array(
 		's2pro' => array(
 			'ten'   => 'S2Pro',
-			'mo_ta' => 'Thanh LED cánh cửa màu đen, tắt đèn không bị lộ.',
+			'mo_ta' => 'Dây LED cửa vỏ đen, tắt đèn không lộ.',
 			'url'   => '/c/dung-chung-moi-xe/s2pro',
 			'goi'   => array(
 				array( 18, 4800000, 6000000 ),
@@ -33,7 +38,7 @@ function skb_dc_mac_dinh() {
 		),
 		's3pro' => array(
 			'ten'   => 'S3Pro',
-			'mo_ta' => 'Thanh LED tapli cửa có họa tiết chấm sao.',
+			'mo_ta' => 'Thanh LED cửa họa tiết chấm sao.',
 			'url'   => '/c/dung-chung-moi-xe/s3pro',
 			'goi'   => array(
 				array( 18, 6000000, 7000000 ),
@@ -109,7 +114,8 @@ function skb_dc_cho_xe( $goi ) {
 	}
 	$lon   = 0;
 	$trung = 0;
-	foreach ( $goi as $g ) {
+	$so    = array();
+	foreach ( $goi as $i => $g ) {
 		if ( ! preg_match( '/^\s*(\d+)\s*chi\s*tiết/iu', $g['ten'], $m ) ) {
 			continue;
 		}
@@ -118,15 +124,16 @@ function skb_dc_cho_xe( $goi ) {
 			continue; // phụ kiện lẻ (vành loa 4 chi tiết…) không tính
 		}
 		$lon++;
+		$so[ $i + 1 ] = $ct;
 		$ten_tron = (bool) preg_match( '/^\s*\d+\s*chi\s*tiết\s*$/iu', $g['ten'] );
 		if ( $ten_tron && isset( $s2[ $ct ] ) && (int) $g['gia'] === $s2[ $ct ][1] && (int) $g['goc'] === $s2[ $ct ][2] ) {
 			$trung++;
 		}
 	}
 	if ( $lon && $trung === $lon ) {
-		return array( 'kieu' => 'chung', 'loai' => array( 's3pro' ) );
+		return array( 'kieu' => 'chung', 'loai' => array( 's3pro' ), 'so' => $so );
 	}
-	return array( 'kieu' => 'ca-hai', 'loai' => array( 's2pro', 's3pro' ) );
+	return array( 'kieu' => 'ca-hai', 'loai' => array( 's2pro', 's3pro' ), 'so' => array() );
 }
 
 /** "4.800.000đ – 9.800.000đ" của một loại; $cot = 'ban' (đang bán) hoặc 'niem' (niêm yết) */
@@ -144,32 +151,181 @@ function skb_dc_khoang( $loai, $cot = 'ban' ) {
 	return min( $v ) === max( $v ) ? skb_tien( min( $v ) ) : skb_tien( min( $v ) ) . ' – ' . skb_tien( max( $v ) );
 }
 
-/** Công tắc phía trên danh sách gói */
-function skb_dc_cong_tac( $dc ) {
-	$bang = skb_dc_bang();
-	if ( 'chung' === $dc['kieu'] ) {
-		echo '<p class="dc-note">Xe này lắp dòng <strong>Dùng chung</strong>. Chọn loại rồi chọn số chi tiết.</p>';
-		echo '<div class="dc-loai" role="group" aria-label="Chọn loại">';
-		skb_dc_the_loai( 's2pro', 'rieng', true );
-		skb_dc_the_loai( 's3pro', 's3pro', false );
-		echo '</div>';
-		return;
-	}
-	echo '<div class="dc-tab" role="group" aria-label="Chọn dòng sản phẩm">';
-	echo '<button type="button" class="dc-tab-b" data-dc-mo="rieng" aria-pressed="true"><b>Ốp theo xe</b><small>Làm riêng cho xe này</small></button>';
-	echo '<button type="button" class="dc-tab-b" data-dc-mo="chung" aria-pressed="false"><b>Dùng chung</b><small>' . esc_html( $bang['s2pro']['ten'] . ' và ' . $bang['s3pro']['ten'] ) . ', lắp được mọi xe</small></button>';
-	echo '</div>';
+/* ---------- Thành phần gói và chữ mô tả ---------- */
+
+/** Số món theo gói dùng chung: [taplo, tapli cửa, yên ngựa, vành loa, trần]; 12 món nền (gầm, tay mở cửa, hộc cốc) gói nào cũng có */
+function skb_dc_thanh_phan() {
+	return array(
+		18 => array( 2, 4, 0, 0, 0 ),
+		20 => array( 2, 4, 2, 0, 0 ),
+		22 => array( 2, 4, 0, 4, 0 ),
+		24 => array( 2, 4, 2, 4, 0 ),
+		26 => array( 2, 8, 0, 4, 0 ),
+		28 => array( 2, 8, 2, 4, 0 ),
+		30 => array( 4, 8, 2, 4, 0 ),
+		32 => array( 4, 8, 2, 4, 2 ),
+	);
 }
 
-function skb_dc_the_loai( $loai, $mo, $bat ) {
-	$b = skb_dc_bang()[ $loai ];
-	printf(
-		'<button type="button" class="dc-loai-b" data-dc-mo="%s" aria-pressed="%s"><b>%s</b><small>%s</small></button>',
-		esc_attr( $mo ),
-		$bat ? 'true' : 'false',
-		esc_html( $b['ten'] ),
-		esc_html( $b['mo_ta'] )
+/** Gói này bằng gói nào cộng thêm gì */
+function skb_dc_truoc() {
+	return array(
+		20 => array( 18, 'thêm 2 thanh LED yên ngựa' ),
+		22 => array( 18, 'thêm 4 đèn vành loa' ),
+		24 => array( 22, 'thêm 2 thanh LED yên ngựa' ),
+		26 => array( 22, 'thêm 4 đèn tapli cửa (thành 8)' ),
+		28 => array( 26, 'thêm 2 thanh LED yên ngựa' ),
+		30 => array( 28, 'thêm 2 thanh LED taplo (thành 2 dài, 2 ngắn)' ),
+		32 => array( 30, 'thêm 2 thanh LED trần' ),
 	);
+}
+
+/** Câu "Gói 30 = gói 28 thêm …" (gói 18: câu gói cơ bản; gói lạ: rỗng) */
+function skb_dc_so_voi( $ct ) {
+	$tp = skb_dc_thanh_phan();
+	if ( ! isset( $tp[ $ct ] ) ) {
+		return '';
+	}
+	$tr = skb_dc_truoc();
+	if ( isset( $tr[ $ct ] ) ) {
+		return sprintf( 'Gói %d = gói %d %s.', $ct, $tr[ $ct ][0], $tr[ $ct ][1] );
+	}
+	return 'Gói cơ bản: 2 thanh LED taplo, 4 đèn tapli cửa, 4 đèn gầm, 4 đèn tay mở cửa, 4 đèn hộc để cốc.';
+}
+
+/** Tên món đèn tapli cửa của từng loại (chỗ duy nhất hai loại khác nhau) */
+function skb_dc_ten_cua( $loai ) {
+	return 's3pro' === $loai ? 'thanh LED tapli cửa họa tiết chấm sao' : 'dây LED tapli cửa vỏ đen, dài 90 cm';
+}
+
+/** Các món của một gói: mảng array( chữ, có phải món mới so với gói trước ) */
+function skb_dc_mon( $loai, $ct ) {
+	$tp = skb_dc_thanh_phan();
+	if ( ! isset( $tp[ $ct ] ) ) {
+		return array();
+	}
+	$tr  = skb_dc_truoc();
+	$cu  = isset( $tr[ $ct ] ) ? $tp[ $tr[ $ct ][0] ] : null;
+	$ten = array(
+		4 === $tp[ $ct ][0] ? 'thanh LED taplo (2 dài, 2 ngắn)' : 'thanh LED taplo (1 dài, 1 ngắn)',
+		skb_dc_ten_cua( $loai ),
+		'thanh LED yên ngựa',
+		'đèn vành loa',
+		'thanh LED trần',
+	);
+	$out = array();
+	foreach ( $tp[ $ct ] as $k => $v ) {
+		if ( $v ) {
+			$out[] = array( $v . ' ' . $ten[ $k ], $cu && $v > $cu[ $k ] );
+		}
+	}
+	foreach ( array( '4 đèn gầm', '4 đèn tay mở cửa', '4 đèn hộc để cốc', 'Dây nguồn, công tắc và bộ hộp điều khiển' ) as $m ) {
+		$out[] = array( $m, false );
+	}
+	return $out;
+}
+
+/** Điểm khác biệt của từng kiểu lắp (chỉ dùng thông tin chủ đã công bố hoặc ghi trên tờ sản phẩm) */
+function skb_dc_diem( $kieu ) {
+	$d = array(
+		'rieng' => array(
+			'Tấm ốp làm riêng theo đúng đời xe, thay đúng vị trí ốp zin và giữ dáng nguyên bản.',
+			'Đấu bằng giắc chờ, không cắt chích dây.',
+			'Đổi màu và hiệu ứng bằng app và nút bấm.',
+		),
+		's2pro' => array(
+			'Thanh LED cánh cửa màu đen nên khi tắt đèn sẽ không bị lộ.',
+			'Thanh LED được nâng cấp dài hơn, không bị hụt khi lắp đặt.',
+			'Có thể tắt riêng vùng ánh sáng bị chói ngay trên công tắc.',
+			'Có nhiều chế độ chào mừng tuỳ chỉnh trên app điện thoại.',
+		),
+		's3pro' => array(
+			'Đèn tapli cửa là thanh LED có họa tiết chấm sao, gồm 2 thanh dài và 2 thanh ngắn hơn.',
+			'Các món còn lại giống S2Pro: taplo, yên ngựa, vành loa, đèn gầm, tay mở cửa, hộc để cốc.',
+			'Đổi màu và hiệu ứng bằng app và nút bấm.',
+		),
+	);
+	return isset( $d[ $kieu ] ) ? $d[ $kieu ] : array();
+}
+
+/** Giá bán thấp nhất của một loại dùng chung (đồng) */
+function skb_dc_tu( $loai ) {
+	$v = array();
+	foreach ( skb_dc_bang()[ $loai ]['goi'] as $g ) {
+		$p   = skb_km_gia( $g[1], $g[2] );
+		$v[] = $p['ban'];
+	}
+	$v = array_filter( $v );
+	return $v ? min( $v ) : 0;
+}
+
+/** Giá bán thấp nhất trong các gói của xe; ưu tiên gói từ 10 chi tiết (không lấy phụ kiện lẻ) */
+function skb_dc_tu_xe( $goi, $gp ) {
+	$lon = array();
+	$all = array();
+	foreach ( $goi as $i => $g ) {
+		$ban = isset( $gp[ $i ]['ban'] ) ? (int) $gp[ $i ]['ban'] : 0;
+		if ( ! $ban ) {
+			continue;
+		}
+		$all[] = $ban;
+		if ( preg_match( '/^\s*(\d+)\s*chi\s*tiết/iu', $g['ten'], $m ) && (int) $m[1] >= 10 ) {
+			$lon[] = $ban;
+		}
+	}
+	return $lon ? min( $lon ) : ( $all ? min( $all ) : 0 );
+}
+
+/** 4800000 → "4,8 tr" (dùng trên thẻ kiểu lắp) */
+function skb_dc_trieu( $v ) {
+	return $v ? rtrim( rtrim( number_format( $v / 1000000, 1, ',', '.' ), '0' ), ',' ) . ' tr' : '';
+}
+
+/** Các kiểu lắp của xe này theo thứ tự hiện: khoá = tên khối (data-dc-pan), giá trị = 'rieng' | 's2pro' | 's3pro' (nội dung) */
+function skb_dc_kieu( $dc ) {
+	return 'chung' === $dc['kieu'] ? array( 'rieng' => 's2pro', 's3pro' => 's3pro' ) : array( 'rieng' => 'rieng', 's2pro' => 's2pro', 's3pro' => 's3pro' );
+}
+
+function skb_dc_ten_kieu( $nd ) {
+	$bang = skb_dc_bang();
+	return 'rieng' === $nd ? 'Ốp theo xe' : $bang[ $nd ]['ten'];
+}
+
+/* ---------- Hiển thị trong ô chọn gói ---------- */
+
+/** Bước 1: các thẻ kiểu lắp (đặt trên danh sách gói) */
+function skb_dc_cong_tac( $dc, $goi = array(), $gp = array() ) {
+	$bang = skb_dc_bang();
+	$dir  = get_template_directory_uri() . '/assets/img/dc/';
+	$n    = count( skb_dc_kieu( $dc ) );
+	printf( '<p class="dc-gt">Xe này lắp được %d kiểu. Chọn một kiểu để xem gói và giá.</p>', (int) $n );
+	echo '<p class="dc-buoc"><b>1</b>Chọn kiểu lắp</p>';
+	printf( '<div class="dc-kieu" role="group" aria-label="Chọn kiểu lắp" data-dc-so="%s">', esc_attr( wp_json_encode( (object) $dc['so'] ) ) );
+	$dau = true;
+	foreach ( skb_dc_kieu( $dc ) as $pan => $nd ) {
+		if ( 'rieng' === $nd ) {
+			$anh = get_the_post_thumbnail_url( get_the_ID(), 'thumbnail' );
+			$mo  = 'Tấm ốp làm riêng cho xe này, thay đúng vị trí ốp zin';
+			$tu  = skb_dc_tu_xe( $goi, $gp );
+		} else {
+			$anh = $dir . $nd . '.webp';
+			$mo  = 'Dùng chung mọi xe. ' . $bang[ $nd ]['mo_ta'];
+			$tu  = 'rieng' === $pan ? skb_dc_tu_xe( $goi, $gp ) : skb_dc_tu( $nd );
+		}
+		printf(
+			'<button type="button" class="dc-k" data-dc-mo="%s" data-dc-nd="%s" aria-pressed="%s">%s<span><b>%s</b><small>%s</small></span>%s</button>',
+			esc_attr( $pan ),
+			esc_attr( $nd ),
+			$dau ? 'true' : 'false',
+			$anh ? '<img src="' . esc_url( $anh ) . '" alt="" width="84" height="58" loading="lazy" decoding="async">' : '',
+			esc_html( skb_dc_ten_kieu( $nd ) ),
+			esc_html( $mo ),
+			$tu ? '<em>từ <strong>' . esc_html( skb_dc_trieu( $tu ) ) . '</strong></em>' : ''
+		);
+		$dau = false;
+	}
+	echo '</div>';
+	echo '<p class="dc-buoc"><b>2</b>Chọn gói theo số chi tiết đèn</p>';
 }
 
 /** Danh sách gói của một loại, cùng kiểu thẻ với gói của xe */
@@ -204,30 +360,233 @@ function skb_dc_ds_goi( $loai ) {
 	echo '</div>';
 }
 
-/** Phần dùng chung đặt sau danh sách gói của xe */
+/** Phần đặt sau danh sách gói của xe: danh sách gói dùng chung, dòng "so với gói trước", liên kết catalog */
 function skb_dc_pan( $dc ) {
-	$bang = skb_dc_bang();
-	if ( 'ca-hai' === $dc['kieu'] ) {
-		echo '<div class="dc-chung" data-dc-pan="chung" hidden>';
-		echo '<div class="dc-loai" role="group" aria-label="Chọn loại">';
-		skb_dc_the_loai( 's2pro', 's2pro', true );
-		skb_dc_the_loai( 's3pro', 's3pro', false );
-		echo '</div>';
-		foreach ( $dc['loai'] as $loai ) {
-			skb_dc_ds_goi( $loai );
-		}
-		echo '</div>';
-	} else {
-		foreach ( $dc['loai'] as $loai ) {
-			skb_dc_ds_goi( $loai );
-		}
+	foreach ( $dc['loai'] as $loai ) {
+		skb_dc_ds_goi( $loai );
 	}
+	echo '<p class="dc-sv" data-dc-sv hidden></p>';
 	printf(
-		'<p class="dc-cat" data-dc-cat hidden><a class="cat-link" href="%s" target="_blank" rel="noopener">Xem chi tiết dòng Dùng chung trên catalog <span aria-hidden="true">↗</span><span class="sr-only"> (mở catalog ở tab mới)</span></a></p>',
+		'<p class="dc-cat" data-dc-cat%s><a class="cat-link" href="%s" target="_blank" rel="noopener">Xem dòng Dùng chung trên catalog <span aria-hidden="true">↗</span><span class="sr-only"> (mở catalog ở tab mới)</span></a></p>',
+		'chung' === $dc['kieu'] ? '' : ' hidden',
 		esc_url( add_query_arg( 'nguon', 'web', SKB_CATALOG_URL . '/c/dung-chung-moi-xe' ) )
 	);
-	echo '<noscript><style>[data-dc-pan][hidden],[data-dc-cat][hidden]{display:grid!important}</style></noscript>';
+	echo '<noscript><style>.mx-goi [data-dc-pan][hidden]{display:grid!important}[data-dc-ve][hidden]{display:block!important}</style></noscript>';
 }
+
+/* ---------- Dưới phần chọn: "Về kiểu …" và bảng so sánh ---------- */
+
+function skb_dc_duoi( $dc, $goi = array(), $gp = array() ) {
+	$bang = skb_dc_bang();
+	$xe   = skb_ten_xe();
+	$kieu = skb_dc_kieu( $dc );
+	echo '<section class="dc-duoi" aria-label="Các kiểu lắp cho xe này">' . "\n";
+	$dau = true;
+	foreach ( $kieu as $pan => $nd ) {
+		printf( '<div class="dc-ve" data-dc-ve="%s"%s>', esc_attr( $pan ), $dau ? '' : ' hidden' );
+		printf( '<h2>%s</h2>', esc_html( sprintf( 'Về kiểu %s trên %s', skb_dc_ten_kieu( $nd ), $xe ) ) );
+		echo '<div class="dc-ve-l"><div><h3>Điểm khác biệt</h3><ul class="dc-ds">';
+		foreach ( skb_dc_diem( $nd ) as $d ) {
+			echo '<li>' . esc_html( $d ) . '</li>';
+		}
+		echo '</ul></div>';
+		if ( 'rieng' !== $nd ) {
+			echo '<div>';
+			$dau_goi = true;
+			foreach ( $bang[ $nd ]['goi'] as $g ) {
+				$mon = skb_dc_mon( $nd, (int) $g[0] );
+				if ( ! $mon ) {
+					continue;
+				}
+				$tr = skb_dc_truoc();
+				printf( '<div data-dc-tp="%s-%d"%s><h3>Gói %d chi tiết gồm</h3><ul class="dc-ds">', esc_attr( $nd ), (int) $g[0], $dau_goi ? '' : ' hidden', (int) $g[0] );
+				foreach ( $mon as $m ) {
+					echo '<li>' . esc_html( $m[0] ) . ( $m[1] ? ' <span class="dc-moi">thêm so với gói ' . (int) $tr[ (int) $g[0] ][0] . '</span>' : '' ) . '</li>';
+				}
+				echo '</ul></div>';
+				$dau_goi = false;
+			}
+			echo '</div>';
+		} else {
+			echo '<div><h3>Các món trong gói</h3><p class="dc-chu">Chọn một gói ở trên để xem danh sách các món đi kèm của gói đó.</p></div>';
+		}
+		echo '</div></div>' . "\n";
+		$dau = false;
+	}
+
+	/* Bảng so sánh: chữ thật, luôn hiện */
+	$cot = array();
+	foreach ( $kieu as $pan => $nd ) {
+		if ( 'rieng' === $nd ) {
+			$n     = 0;
+			foreach ( $goi as $g ) {
+				if ( preg_match( '/^\s*(\d+)\s*chi\s*tiết/iu', $g['ten'], $m ) && (int) $m[1] >= 10 ) {
+					$n++;
+				}
+			}
+			$cot[ $pan ] = array( 'Ốp theo xe', 'Riêng ' . $xe, 'Tấm ốp thay đúng vị trí ốp zin của xe', 'Theo từng gói của xe', ( $n ? $n : count( $goi ) ) . ' gói', skb_dc_tu_xe( $goi, $gp ) );
+		} else {
+			$ct = array();
+			foreach ( $bang[ $nd ]['goi'] as $g ) {
+				$ct[] = (int) $g[0];
+			}
+			$cot[ $pan ] = array(
+				$bang[ $nd ]['ten'],
+				'Mọi dòng xe',
+				's3pro' === $nd ? 'Thanh LED họa tiết chấm sao, 2 dài và 2 ngắn' : 'Dây LED vỏ đen dài 90 cm, tắt đèn không lộ',
+				's3pro' === $nd ? 'Giống S2Pro' : 'Taplo, yên ngựa, vành loa, đèn gầm, tay mở cửa, hộc để cốc',
+				count( $ct ) . ' gói, ' . min( $ct ) . ' đến ' . max( $ct ) . ' chi tiết',
+				'rieng' === $pan ? skb_dc_tu_xe( $goi, $gp ) : skb_dc_tu( $nd ),
+			);
+		}
+	}
+	$hang = array( 1 => 'Dành cho', 2 => 'Đèn tapli cửa', 3 => 'Các món khác', 4 => 'Các gói' );
+	printf( '<div class="dc-ss"><h2>%s</h2><div class="dc-ss-k"><table class="dc-bang"><thead><tr><th scope="col"><span class="sr-only">Tiêu chí</span></th>', esc_html( sprintf( 'So sánh %d kiểu lắp cho %s', count( $cot ), $xe ) ) );
+	$dau = true;
+	foreach ( $cot as $pan => $c ) {
+		printf( '<th scope="col" data-dc-cot="%s"%s>%s</th>', esc_attr( $pan ), $dau ? ' class="on"' : '', esc_html( $c[0] ) );
+		$dau = false;
+	}
+	echo '</tr></thead><tbody>';
+	foreach ( $hang as $i => $h ) {
+		echo '<tr><th scope="row">' . esc_html( $h ) . '</th>';
+		$dau = true;
+		foreach ( $cot as $pan => $c ) {
+			printf( '<td data-dc-cot="%s"%s>%s</td>', esc_attr( $pan ), $dau ? ' class="on"' : '', esc_html( $c[ $i ] ) );
+			$dau = false;
+		}
+		echo '</tr>';
+	}
+	echo '<tr><th scope="row">Giá từ</th>';
+	$dau = true;
+	foreach ( $cot as $pan => $c ) {
+		printf( '<td data-dc-cot="%s"%s>%s</td>', esc_attr( $pan ), $dau ? ' class="on"' : '', $c[5] ? esc_html( skb_tien( $c[5] ) ) : 'Liên hệ' );
+		$dau = false;
+	}
+	echo '</tr><tr><th scope="row">Bảo hành</th>';
+	$dau = true;
+	foreach ( $cot as $pan => $c ) {
+		printf( '<td data-dc-cot="%s"%s>24 tháng</td>', esc_attr( $pan ), $dau ? ' class="on"' : '' );
+		$dau = false;
+	}
+	echo '</tr></tbody></table></div></div>' . "\n" . '</section>' . "\n";
+}
+
+/* ---------- Ảnh riêng của S2Pro, S3Pro trên từng xe ---------- */
+
+/** Bộ ảnh nhỏ thay thế, in sau bộ ảnh chính của trang mẫu xe; chọn thẻ nào thì script hiện bộ của thẻ đó */
+function skb_dc_anh_xe( $post_id, $dc ) {
+	foreach ( skb_dc_kieu( $dc ) as $pan => $nd ) {
+		if ( 'rieng' === $nd ) {
+			continue;
+		}
+		$ids = array_filter( array_map( 'absint', explode( ',', (string) get_post_meta( $post_id, '_skb_dc_anh_' . $nd, true ) ) ) );
+		if ( ! $ids ) {
+			continue;
+		}
+		printf( '<div class="mx-thumbs" data-dc-anh="%s" role="list" hidden>', esc_attr( $pan ) );
+		foreach ( $ids as $i => $aid ) {
+			$full = wp_get_attachment_image_src( $aid, 'large' );
+			if ( ! $full ) {
+				continue;
+			}
+			printf(
+				'<button type="button" class="mx-th" data-src="%s" data-srcset="%s" aria-label="%s">%s</button>',
+				esc_url( $full[0] ),
+				esc_attr( (string) wp_get_attachment_image_srcset( $aid, 'large' ) ),
+				esc_attr( 'Ảnh ' . skb_dc_ten_kieu( $nd ) . ' ' . ( $i + 1 ) ),
+				wp_get_attachment_image( $aid, 'thumbnail', false, array( 'loading' => 'lazy' ) )
+			);
+		}
+		echo '</div>';
+	}
+}
+
+add_action( 'add_meta_boxes_mau_xe', function () {
+	add_meta_box( 'skb_dc_anh', 'Ảnh dòng dùng chung trên xe này (S2Pro, S3Pro)', 'skb_dc_anh_box', 'mau_xe', 'normal', 'default' );
+} );
+
+function skb_dc_anh_box( $post ) {
+	wp_nonce_field( 'skb_dc_anh', 'skb_dc_anh_n' );
+	?>
+	<style>
+		.skb-dca-list{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0;padding:0;list-style:none;min-height:20px}
+		.skb-dca-list li{position:relative;width:96px;height:96px;border-radius:8px;overflow:hidden;background:#f0f0f1;cursor:move;margin:0}
+		.skb-dca-list img{width:100%;height:100%;object-fit:cover;display:block}
+		.skb-dca-list .skb-x{position:absolute;top:4px;right:4px;width:22px;height:22px;border:0;border-radius:50%;background:rgba(0,0,0,.65);color:#fff;cursor:pointer;line-height:20px;padding:0}
+		.skb-dca-list .ui-sortable-placeholder{visibility:visible!important;border:2px dashed #2271b1;background:transparent}
+	</style>
+	<p>Ảnh chụp <strong>S2Pro</strong> và <strong>S3Pro</strong> lắp trên chính mẫu xe này. Ở trang mẫu xe, khách bấm thẻ S2Pro hoặc S3Pro thì bộ ảnh phía trên đổi sang ảnh tương ứng. Để trống thì trang giữ bộ ảnh chung của xe. (Ảnh của kiểu Ốp theo xe vẫn là khung "Bộ ảnh sản phẩm".)</p>
+	<?php foreach ( array( 's2pro' => 'S2Pro', 's3pro' => 'S3Pro' ) as $k => $ten ) :
+		$ids = array_filter( array_map( 'absint', explode( ',', (string) get_post_meta( $post->ID, '_skb_dc_anh_' . $k, true ) ) ) );
+		?>
+		<div class="skb-dca" data-ten="<?php echo esc_attr( $ten ); ?>">
+			<p><strong><?php echo esc_html( $ten ); ?></strong> <span class="description skb-dca-dem"></span></p>
+			<input type="hidden" class="skb-dca-ids" name="skb_dc_anh[<?php echo esc_attr( $k ); ?>]" value="<?php echo esc_attr( implode( ',', $ids ) ); ?>">
+			<ul class="skb-dca-list">
+				<?php foreach ( $ids as $id ) : $t = wp_get_attachment_image_src( $id, 'thumbnail' ); if ( ! $t ) { continue; } ?>
+					<li data-id="<?php echo (int) $id; ?>"><img src="<?php echo esc_url( $t[0] ); ?>" alt=""><button type="button" class="skb-x" aria-label="Bỏ ảnh">×</button></li>
+				<?php endforeach; ?>
+			</ul>
+			<p><button type="button" class="button skb-dca-add">+ Thêm ảnh <?php echo esc_html( $ten ); ?></button></p>
+		</div>
+	<?php endforeach; ?>
+	<script>
+	jQuery(function ($) {
+		$('.skb-dca').each(function () {
+			var $box = $(this), $list = $box.find('.skb-dca-list'), $ids = $box.find('.skb-dca-ids'), frame;
+			function dem() { var n = $list.children('li').length; $box.find('.skb-dca-dem').text(n ? n + ' ảnh' : 'Chưa có ảnh'); }
+			function sync() {
+				var ids = $list.children('li').map(function () { return $(this).data('id'); }).get();
+				$ids.val(ids.join(',')).trigger('change');
+				dem();
+				try { if (window.wp && wp.data && wp.data.dispatch('core/editor')) { wp.data.dispatch('core/editor').editPost({ meta: { _skb_bo_anh_doi: String(Date.now()) } }); } } catch (e) {}
+			}
+			$list.sortable({ update: sync, tolerance: 'pointer' });
+			$list.on('click', '.skb-x', function () { $(this).closest('li').remove(); sync(); });
+			$box.find('.skb-dca-add').on('click', function (e) {
+				e.preventDefault();
+				if (!frame) {
+					frame = wp.media({ title: 'Chọn ảnh ' + $box.data('ten') + ' trên xe này', button: { text: 'Thêm ảnh' }, library: { type: 'image' }, multiple: 'add' });
+					frame.on('select', function () {
+						var have = $ids.val().split(',');
+						frame.state().get('selection').each(function (a) {
+							var id = String(a.id); if (have.indexOf(id) >= 0) return;
+							var s = a.get('sizes'), u = (s && s.thumbnail ? s.thumbnail.url : a.get('url'));
+							$list.append($('<li>').attr('data-id', id).data('id', id).append($('<img alt="">').attr('src', u), '<button type="button" class="skb-x" aria-label="Bỏ ảnh">×</button>'));
+						});
+						sync();
+					});
+				}
+				frame.open();
+			});
+			dem();
+		});
+	});
+	</script>
+	<?php
+}
+
+add_action( 'save_post_mau_xe', function ( $post_id ) {
+	if ( ! isset( $_POST['skb_dc_anh_n'] ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['skb_dc_anh_n'] ) ), 'skb_dc_anh' ) ) {
+		return;
+	}
+	if ( ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) || ! current_user_can( 'edit_post', $post_id ) ) {
+		return;
+	}
+	$v = isset( $_POST['skb_dc_anh'] ) && is_array( $_POST['skb_dc_anh'] ) ? wp_unslash( $_POST['skb_dc_anh'] ) : array(); // phpcs:ignore
+	foreach ( array( 's2pro', 's3pro' ) as $k ) {
+		$ids = array_filter( array_map( 'absint', explode( ',', isset( $v[ $k ] ) ? (string) $v[ $k ] : '' ) ) );
+		$ids = array_values( array_unique( array_filter( $ids, function ( $id ) {
+			return 'attachment' === get_post_type( $id );
+		} ) ) );
+		if ( $ids ) {
+			update_post_meta( $post_id, '_skb_dc_anh_' . $k, implode( ',', $ids ) );
+		} else {
+			delete_post_meta( $post_id, '_skb_dc_anh_' . $k );
+		}
+	}
+} );
 
 /* ---------- Trang quản trị: Mẫu xe › Dòng dùng chung ---------- */
 add_action( 'admin_menu', function () {

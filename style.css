@@ -1144,3 +1144,47 @@ body.km-co{--km-h:40px}
 .dc-cat{margin:10px 0 0;font-size:13px}
 @media (prefers-reduced-motion:reduce){.dc-tab-b,.dc-loai-b{transition:none}}
 
+/* ===== 0.25.0 — trang mẫu xe: thẻ kiểu lắp (Ốp theo xe | S2Pro | S3Pro), khối "Về kiểu …", bảng so sánh — inc/dung-chung.php ===== */
+.dc-gt{margin:0 0 4px;font-size:14px;line-height:1.5;color:var(--soft)}
+.dc-buoc{margin:16px 0 8px;font-size:13px;font-weight:600;letter-spacing:.02em;color:var(--muted)}
+.dc-buoc b{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;margin-right:8px;border-radius:50%;background:var(--grad-cta);color:var(--white);font-size:12px}
+.dc-kieu{display:grid;gap:8px}
+.dc-k{display:flex;align-items:center;gap:12px;width:100%;min-height:74px;padding:8px 14px 8px 8px;border-radius:16px;border:1.5px solid var(--border);background:var(--tile);color:var(--text);font-family:inherit;text-align:left;cursor:pointer;transition:border-color .2s,background-color .2s}
+.dc-k img{flex:0 0 84px;width:84px;height:58px;object-fit:cover;border-radius:10px;background:#000}
+.dc-k>span{flex:1;min-width:0}
+.dc-k b{display:block;font-family:var(--font-head);font-size:16px;line-height:1.2}
+.dc-k small{display:block;margin-top:3px;font-size:12.5px;line-height:1.4;color:var(--muted)}
+.dc-k em{font-style:normal;font-size:12px;color:var(--soft);white-space:nowrap;text-align:right}
+.dc-k em strong{display:block;font-size:15px;color:var(--white)}
+.dc-k[aria-pressed="true"]{border-color:var(--brand-2);background:radial-gradient(120% 140% at 0% 0%,rgba(223,28,78,.18),transparent 70%),var(--tile)}
+@media (hover:hover){.dc-k:hover{border-color:rgba(255,255,255,.22)}.dc-k[aria-pressed="true"]:hover{border-color:var(--brand-2)}}
+.dc-sv{margin:10px 0 0;padding:10px 14px;border-radius:12px;background:rgba(244,155,63,.1);font-size:13.5px;line-height:1.5;color:var(--accent-pale)}
+.dc-sv[hidden]{display:none}
+.dc-duoi{margin:0 0 40px}
+.dc-ve,.dc-ss{padding-top:32px;border-top:1px solid rgba(255,255,255,.08)}
+.dc-ss{margin-top:36px}
+.dc-ve[hidden]{display:none}
+.dc-ve h2,.dc-ss h2{margin:0 0 20px;font-family:var(--font-head);font-size:clamp(21px,2.5vw,28px);line-height:1.2;font-weight:800;letter-spacing:-.02em}
+.dc-ve h3{margin:0 0 12px;font-size:16px}
+.dc-ve-l{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;align-items:start}
+.dc-ds{margin:0;padding:0;list-style:none;display:grid;gap:9px}
+.dc-ds li{position:relative;padding-left:22px;font-size:15px;line-height:1.55;color:var(--soft)}
+.dc-ds li::before{content:"";position:absolute;left:0;top:.62em;width:10px;height:3px;border-radius:2px;background:linear-gradient(90deg,var(--brand-2),var(--brand-3))}
+.dc-moi{display:inline-block;padding:1px 8px;border-radius:999px;background:rgba(244,155,63,.16);color:var(--accent-soft);font-size:11.5px;font-weight:600;white-space:nowrap}
+.dc-chu{margin:0;font-size:14px;line-height:1.55;color:var(--muted)}
+.dc-ss-k{overflow-x:auto}
+.dc-bang{width:100%;border-collapse:collapse;table-layout:fixed;font-size:14px;line-height:1.45}
+.dc-bang th,.dc-bang td{padding:12px 10px;border-bottom:1px solid rgba(255,255,255,.08);text-align:left;vertical-align:top}
+.dc-bang thead th{font-family:var(--font-head);font-size:15px}
+.dc-bang tbody th{width:22%;font-weight:500;color:var(--muted)}
+.dc-bang .on{background:rgba(223,28,78,.09)}
+@media (max-width:860px){
+  .dc-ve-l{grid-template-columns:minmax(0,1fr);gap:22px}
+  .dc-bang{font-size:13px}
+  .dc-bang th,.dc-bang td{padding:10px 6px}
+  .dc-duoi{margin-bottom:28px}
+}
+@media (prefers-reduced-motion:reduce){.dc-k{transition:none}}
+
+
+.mx-thumbs[hidden]{display:none}

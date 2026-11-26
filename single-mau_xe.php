@@ -18,6 +18,8 @@ while ( have_posts() ) :
 	$book_xe = get_the_title() . ( $chon >= 0 ? ' — ' . $goi[ $chon ]['ten'] : '' );
 	$ngoai   = skb_ngu_ngoai();
 	$tien    = $ngoai ? 'skb_ngu_tien' : 'skb_tien';
+	// 0.25.0: các kiểu lắp của xe (Ốp theo xe, S2Pro, S3Pro) — chỉ bản tiếng Việt
+	$dc      = ( ! $ngoai && $goi && function_exists( 'skb_dc_cho_xe' ) ) ? skb_dc_cho_xe( $goi ) : null;
 	// giá hiển thị từng gói: bản Việt theo chương trình khuyến mại (ngoài chương trình chỉ giá niêm yết), bản nước ngoài như cũ
 	$km      = ! $ngoai && skb_km_dang_chay();
 	$gp      = array_map( function ( $g ) {
@@ -60,6 +62,7 @@ while ( have_posts() ) :
 								<?php endforeach; ?>
 							</div>
 						<?php endif; ?>
+						<?php if ( $dc && function_exists( 'skb_dc_anh_xe' ) ) { skb_dc_anh_xe( get_the_ID(), $dc ); } ?>
 						<?php if ( function_exists( 'skb_op_thu_mau_anh' ) ) { skb_op_thu_mau_anh(); } ?>
 					<?php endif; ?>
 					<?php if ( function_exists( 'skb_op_khoi_mau_xe' ) ) { skb_op_khoi_mau_xe( get_the_ID() ); } // 0.23.1: khối Bộ tấm ốp nằm ở cột ảnh, dưới hàng thử màu ?>
@@ -70,9 +73,8 @@ while ( have_posts() ) :
 					<?php if ( $goi ) : $g0 = $chon >= 0 ? $gp[ $chon ] : null; $p0 = $g0 ? ( $g0['ban'] ? $tien( $g0['ban'] ) : skb__( 'Liên hệ' ) ) : $khoang; ?>
 						<p class="mx-price" id="mx-price" aria-live="polite"><strong data-p<?php echo $km ? skb_km_niem_attr( $p0, $g0 ? ( $g0['niem'] ? $tien( $g0['niem'] ) : skb__( 'Liên hệ' ) ) : $khoang_niem ) : ''; // phpcs:ignore ?>><?php echo esc_html( $p0 ); ?></strong> <s data-o data-km-an<?php echo ( $g0 && $g0['goc'] ) ? '' : ' hidden'; ?>><?php echo esc_html( $g0 && $g0['goc'] ? $tien( $g0['goc'] ) : '' ); ?></s> <span><?php echo esc_html( $ngoai ? skb__( 'Giá bán tại Việt Nam, gồm VAT' ) : 'đã gồm VAT' ); ?></span></p>
 						<fieldset class="mx-goi">
-							<legend><?php skb_e( 'Chọn gói' ); ?> <span><?php echo esc_html( sprintf( skb__( '%d lựa chọn' ), count( $goi ) ) ); ?></span></legend>
-							<?php $dc = ( ! $ngoai && function_exists( 'skb_dc_cho_xe' ) ) ? skb_dc_cho_xe( $goi ) : null; // 0.24.0: dòng Dùng chung (S2Pro, S3Pro) ?>
-							<?php if ( $dc ) { skb_dc_cong_tac( $dc ); } ?>
+							<legend<?php echo $dc ? ' class="sr-only"' : ''; ?>><?php skb_e( 'Chọn gói' ); ?> <span><?php echo esc_html( sprintf( skb__( '%d lựa chọn' ), count( $goi ) ) ); ?></span></legend>
+							<?php if ( $dc ) { skb_dc_cong_tac( $dc, $goi, $gp ); } ?>
 							<div class="goi-list"<?php if ( $dc ) { printf( ' data-dc-pan="rieng" data-khoang="%s" data-khoang-niem="%s"', esc_attr( $khoang ), esc_attr( $khoang_niem ) ); } ?>>
 								<?php
 								foreach ( $goi as $i => $g ) :
@@ -143,6 +145,7 @@ while ( have_posts() ) :
 					<?php endif; ?>
 				</div>
 			</div>
+			<?php if ( $dc && function_exists( 'skb_dc_duoi' ) ) { skb_dc_duoi( $dc, $goi, $gp ); } ?>
 			<?php skb_khach_that_khoi( get_the_ID() ); ?>
 			<?php if ( ! $ngoai ) : ?><div class="entry mx-desc"><?php the_content(); ?></div><?php endif; ?>
 		</article>

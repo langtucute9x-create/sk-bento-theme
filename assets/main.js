@@ -551,23 +551,46 @@
   if (img.complete && img.naturalWidth) ready();
 })();
 
-/* ===== 0.24.0 — trang mẫu xe: công tắc Ốp theo xe | Dùng chung, và chọn loại S2Pro | S3Pro (inc/dung-chung.php) =====
- * Mỗi nút có data-dc-mo = tên khối cần mở (data-dc-pan). Đổi khối thì bỏ gói đang chọn và đưa giá về khoảng giá của khối đó;
- * việc đổi giá khi chọn một gói vẫn do đoạn script sẵn có của trang mẫu xe làm (các gói cùng nhóm name="skb_goi"). */
+/* ===== 0.25.0 — trang mẫu xe: chọn kiểu lắp (Ốp theo xe | S2Pro | S3Pro) — inc/dung-chung.php =====
+ * Mỗi thẻ có data-dc-mo = tên khối gói cần mở (data-dc-pan). Đổi thẻ thì: bỏ gói đang chọn, giá về khoảng giá của kiểu đó,
+ * khối "Về kiểu …" (data-dc-ve), cột bảng so sánh (data-dc-cot) và bộ ảnh riêng (data-dc-anh) đổi theo.
+ * Chọn một gói thì hiện dòng "Gói N = gói M thêm …" và danh sách món của gói (data-dc-tp). Việc đổi giá khi chọn gói
+ * vẫn do đoạn script sẵn có của trang làm (các gói cùng nhóm name="skb_goi"). Mọi nội dung đã in sẵn trong HTML. */
 (function () {
   var fs = document.querySelector('.mx-goi');
-  if (!fs || !fs.querySelector('[data-dc-mo]')) return;
+  var group = fs && fs.querySelector('.dc-kieu');
+  if (!group) return;
+  var each = function (list, fn) { Array.prototype.forEach.call(list, fn); };
   var price = document.getElementById('mx-price');
   var cat = fs.querySelector('[data-dc-cat]');
+  var sv = fs.querySelector('[data-dc-sv]');
+  var so = {};
+  try { so = JSON.parse(group.getAttribute('data-dc-so') || '{}') || {}; } catch (e) {}
+  var truoc = { 20: [18, 'thêm 2 thanh LED yên ngựa'], 22: [18, 'thêm 4 đèn vành loa'], 24: [22, 'thêm 2 thanh LED yên ngựa'], 26: [22, 'thêm 4 đèn tapli cửa (thành 8)'], 28: [26, 'thêm 2 thanh LED yên ngựa'], 30: [28, 'thêm 2 thanh LED taplo (thành 2 dài, 2 ngắn)'], 32: [30, 'thêm 2 thanh LED trần'] };
   var books = Array.prototype.map.call(document.querySelectorAll('[data-book]'), function (a) {
     return { a: a, href: a.getAttribute('href'), text: (a.querySelector('span') || a).textContent };
   });
-  var pan = function (n) { return fs.querySelector('[data-dc-pan="' + n + '"]'); };
+  var main = document.getElementById('mx-main');
+  var goc = main ? { src: main.getAttribute('src'), srcset: main.getAttribute('srcset') } : null;
+  var thumbs0 = document.querySelector('.mx-media .mx-thumbs:not([data-dc-anh])');
+  var cur = function () { return group.querySelector('[aria-pressed="true"]'); };
+  /* Danh sách món của gói: nd = s2pro | s3pro, ct = số chi tiết; không có thì giữ gói đầu của kiểu đó */
+  var monGoi = function (nd, ct) {
+    var box = document.querySelector('[data-dc-ve="' + cur().getAttribute('data-dc-mo') + '"]');
+    if (!box) return;
+    var all = box.querySelectorAll('[data-dc-tp]'), hit = box.querySelector('[data-dc-tp="' + nd + '-' + ct + '"]');
+    if (!all.length) return;
+    each(all, function (d, i) { d.hidden = hit ? d !== hit : i !== 0; });
+  };
+  var cau = function (ct) {
+    if (!sv) return;
+    var t = truoc[ct] ? 'Gói ' + ct + ' = gói ' + truoc[ct][0] + ' ' + truoc[ct][1] + '.' : (ct === 18 ? 'Gói cơ bản: 2 thanh LED taplo, 4 đèn tapli cửa, 4 đèn gầm, 4 đèn tay mở cửa, 4 đèn hộc để cốc.' : '');
+    sv.textContent = t; sv.hidden = !t;
+  };
   var reset = function () {
-    Array.prototype.forEach.call(fs.querySelectorAll('input[type=radio]'), function (r) { r.checked = false; });
-    Array.prototype.forEach.call(fs.querySelectorAll('.goi-ct'), function (c) { c.hidden = c.getAttribute('data-ct') !== '0'; });
-    var list = null;
-    Array.prototype.forEach.call(fs.querySelectorAll('.goi-list[data-dc-pan]'), function (l) { if (!list && l.offsetParent !== null) list = l; });
+    each(fs.querySelectorAll('input[type=radio]'), function (r) { r.checked = false; });
+    each(fs.querySelectorAll('.goi-ct'), function (c) { c.hidden = c.getAttribute('data-ct') !== '0'; });
+    var b = cur(), list = fs.querySelector('.goi-list[data-dc-pan="' + b.getAttribute('data-dc-mo') + '"]');
     if (price && list) {
       var p = price.querySelector('[data-p]'), o = price.querySelector('[data-o]');
       var k = list.getAttribute('data-khoang') || '', kn = list.getAttribute('data-khoang-niem') || '';
@@ -577,27 +600,44 @@
       }
       if (o) { o.textContent = ''; o.hidden = true; }
     }
-    books.forEach(function (b) { b.a.setAttribute('href', b.href); (b.a.querySelector('span') || b.a).textContent = b.text; });
+    books.forEach(function (x) { x.a.setAttribute('href', x.href); (x.a.querySelector('span') || x.a).textContent = x.text; });
     var bar = document.querySelector('[data-gia-bar]');
     if (bar && list) bar.textContent = list.getAttribute('data-khoang') || bar.textContent;
-    if (cat) cat.hidden = !list || list.getAttribute('data-dc-pan') === 'rieng' && !!fs.querySelector('.dc-tab');
+    if (sv) { sv.textContent = ''; sv.hidden = true; }
+    monGoi(b.getAttribute('data-dc-nd'), 0);
   };
-  var open = function (btn, quiet) {
-    var group = btn.parentNode, name = btn.getAttribute('data-dc-mo');
-    Array.prototype.forEach.call(group.children, function (b) {
-      var on = b === btn, p = pan(b.getAttribute('data-dc-mo'));
+  var open = function (btn) {
+    var name = btn.getAttribute('data-dc-mo'), nd = btn.getAttribute('data-dc-nd');
+    each(group.children, function (b) {
+      var on = b === btn, n = b.getAttribute('data-dc-mo');
       b.setAttribute('aria-pressed', on ? 'true' : 'false');
-      if (p) p.hidden = !on;
+      var p = fs.querySelector('[data-dc-pan="' + n + '"]'); if (p) p.hidden = !on;
+      var v = document.querySelector('[data-dc-ve="' + n + '"]'); if (v) v.hidden = !on;
     });
-    /* Mở khối "Dùng chung" thì mở luôn loại đang được chọn bên trong */
-    var inner = pan(name) && pan(name).querySelector('.dc-loai [aria-pressed="true"]');
-    if (inner) open(inner, true);
-    if (!quiet) reset();
+    each(document.querySelectorAll('[data-dc-cot]'), function (c) { c.classList.toggle('on', c.getAttribute('data-dc-cot') === name); });
+    if (cat) cat.hidden = nd === 'rieng';
+    /* Bộ ảnh riêng của kiểu này trên xe (nếu có); không có thì trả lại bộ ảnh chung */
+    var set = document.querySelector('[data-dc-anh="' + name + '"]');
+    each(document.querySelectorAll('[data-dc-anh]'), function (d) { d.hidden = d !== set; });
+    if (thumbs0) thumbs0.hidden = !!set;
+    if (main) {
+      var first = set ? set.querySelector('.mx-th') : (thumbs0 ? thumbs0.querySelector('.mx-th') : null);
+      if (first) first.click();
+      else if (goc && goc.src) { main.src = goc.src; if (goc.srcset) main.srcset = goc.srcset; else main.removeAttribute('srcset'); }
+    }
+    reset();
   };
-  fs.addEventListener('click', function (e) {
+  group.addEventListener('click', function (e) {
     var b = e.target.closest && e.target.closest('[data-dc-mo]');
-    if (b && fs.contains(b)) open(b);
+    if (b && group.contains(b) && b.getAttribute('aria-pressed') !== 'true') open(b);
   });
-  if (cat) cat.hidden = !!fs.querySelector('.dc-tab');
+  fs.addEventListener('change', function (e) {
+    var r = e.target;
+    if (!r || r.name !== 'skb_goi' || !r.checked) return;
+    var m = /^dc-(s[23]pro)-(\d+)$/.exec(r.value), nd = cur().getAttribute('data-dc-nd'), ct = m ? parseInt(m[2], 10) : (so[r.value] || 0);
+    if (nd === 'rieng') { if (sv) { sv.textContent = ''; sv.hidden = true; } return; }
+    cau(ct);
+    monGoi(m ? m[1] : nd, ct);
+  });
 })();
 
