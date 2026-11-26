@@ -63,7 +63,7 @@ while ( have_posts() ) :
 							</div>
 						<?php endif; ?>
 						<?php if ( $dc && function_exists( 'skb_dc_anh_xe' ) ) { skb_dc_anh_xe( get_the_ID(), $dc ); } ?>
-						<?php if ( function_exists( 'skb_op_thu_mau_anh' ) ) { skb_op_thu_mau_anh(); } ?>
+						<?php if ( function_exists( 'skb_op_thu_mau_anh' ) && ( ! function_exists( 'skb_op_thu_mau_duoc' ) || skb_op_thu_mau_duoc( get_the_ID(), $gallery ) ) ) { skb_op_thu_mau_anh(); } // 0.25.3: chỉ ở xe có phần lớn ảnh thử màu được ?>
 					<?php endif; ?>
 					<?php if ( function_exists( 'skb_op_khoi_mau_xe' ) ) { skb_op_khoi_mau_xe( get_the_ID() ); } // 0.23.1: khối Bộ tấm ốp nằm ở cột ảnh, dưới hàng thử màu ?>
 				</div>

@@ -252,6 +252,115 @@ function skb_op_khoi_mau_xe( $post_id ) {
 }
 
 /**
+ * 0.25.3 — Chỉ bật hàng "Thử màu đèn" ở những xe có PHẦN LỚN ảnh thử màu được (chủ chốt 27/11/2026).
+ * Máy chủ xem ảnh nhỏ (thumbnail) của từng ảnh trong bộ ảnh, dùng cùng cách tính với assets/main.js: ảnh có vùng đèn LED
+ * một màu đủ rõ thì tính là thử được. Từ một nửa số ảnh trở lên thử được thì xe đó có hàng nút; còn lại bỏ hẳn hàng này.
+ * Kết quả lưu ở meta _skb_thu_mau ("<mã bộ ảnh>:<số ảnh được>/<tổng>"), tự tính lại khi bộ ảnh đổi.
+ * Máy chủ không đọc được ảnh (thiếu GD/WebP) thì coi như bật, giữ cách cũ.
+ */
+function skb_op_thu_mau_duoc( $post_id, $ids ) {
+	$ids = array_values( array_filter( array_map( 'absint', (array) $ids ) ) );
+	if ( ! $ids ) {
+		return false;
+	}
+	if ( ! function_exists( 'imagecreatefromstring' ) || ! function_exists( 'imagecopyresampled' ) ) {
+		return true;
+	}
+	$ids = array_slice( $ids, 0, 30 );
+	$ma  = substr( md5( implode( ',', $ids ) ), 0, 10 );
+	$luu = (string) get_post_meta( $post_id, '_skb_thu_mau', true );
+	if ( preg_match( '/^([0-9a-f]{10}):(\d+)\/(\d+)$/', $luu, $m ) && $m[1] === $ma ) {
+		return (int) $m[3] > 0 && (int) $m[2] * 2 >= (int) $m[3];
+	}
+	$duoc = 0;
+	$tong = 0;
+	foreach ( $ids as $id ) {
+		$kq = skb_op_anh_mot_mau( $id );
+		if ( null === $kq ) {
+			continue; // không đọc được ảnh này: không tính
+		}
+		$tong++;
+		if ( $kq ) {
+			$duoc++;
+		}
+	}
+	if ( ! $tong ) {
+		return true; // không đọc được ảnh nào: giữ cách cũ, không lưu
+	}
+	update_post_meta( $post_id, '_skb_thu_mau', $ma . ':' . $duoc . '/' . $tong );
+	return $duoc * 2 >= $tong;
+}
+
+/** Ảnh có vùng đèn LED một màu đủ rõ không? true / false, hoặc null khi không đọc được ảnh */
+function skb_op_anh_mot_mau( $id ) {
+	$file = get_attached_file( $id );
+	if ( ! $file ) {
+		return null;
+	}
+	$meta = wp_get_attachment_metadata( $id );
+	foreach ( array( 'thumbnail', 'medium' ) as $co ) {
+		if ( ! empty( $meta['sizes'][ $co ]['file'] ) ) {
+			$nho = dirname( $file ) . '/' . $meta['sizes'][ $co ]['file'];
+			if ( is_readable( $nho ) ) {
+				$file = $nho;
+				break;
+			}
+		}
+	}
+	if ( ! is_readable( $file ) || filesize( $file ) > 3 * 1024 * 1024 ) {
+		return null;
+	}
+	$goc = @imagecreatefromstring( (string) file_get_contents( $file ) ); // phpcs:ignore
+	if ( ! $goc ) {
+		return null;
+	}
+	$n  = 32;
+	$im = imagecreatetruecolor( $n, $n );
+	imagecopyresampled( $im, $goc, 0, 0, 0, 0, $n, $n, imagesx( $goc ), imagesy( $goc ) );
+	imagedestroy( $goc );
+	$bins = array_fill( 0, 36, 0.0 );
+	$sum  = 0.0;
+	$px   = 0;
+	for ( $y = 0; $y < $n; $y++ ) {
+		for ( $x = 0; $x < $n; $x++ ) {
+			$c  = imagecolorat( $im, $x, $y );
+			$r  = ( ( $c >> 16 ) & 255 ) / 255;
+			$g  = ( ( $c >> 8 ) & 255 ) / 255;
+			$b  = ( $c & 255 ) / 255;
+			$mx = max( $r, $g, $b );
+			$df = $mx - min( $r, $g, $b );
+			if ( $mx < 0.32 || $df / $mx < 0.5 ) {
+				continue;
+			}
+			if ( $mx === $r ) {
+				$h = fmod( ( $g - $b ) / $df, 6 );
+			} elseif ( $mx === $g ) {
+				$h = ( $b - $r ) / $df + 2;
+			} else {
+				$h = ( $r - $g ) / $df + 4;
+			}
+			$h = fmod( $h * 60 + 360, 360 );
+			$w = $df; // = độ đậm màu × độ sáng
+			$bins[ ( (int) floor( $h / 10 ) ) % 36 ] += $w;
+			$sum += $w;
+			$px++;
+		}
+	}
+	imagedestroy( $im );
+	if ( $px / ( $n * $n ) < 0.025 || $sum <= 0 ) {
+		return false;
+	}
+	$best = 0.0;
+	for ( $k = 0; $k < 36; $k++ ) {
+		$v = $bins[ ( $k + 35 ) % 36 ] + $bins[ $k ] + $bins[ ( $k + 1 ) % 36 ];
+		if ( $v > $best ) {
+			$best = $v;
+		}
+	}
+	return $best / $sum >= 0.5;
+}
+
+/**
  * 0.23.0 — Thử màu đèn ngay trên ảnh sản phẩm (trang mẫu xe).
  * In sẵn nhưng ẩn; assets/main.js chỉ hiện khi ảnh đang xem có vùng đèn LED một màu rõ ràng, rồi xoay sắc màu của ảnh
  * từ màu đèn trong ảnh sang màu khách chọn. Đây là mô phỏng trên ảnh, không phải ảnh chụp từng màu.
