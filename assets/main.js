@@ -532,7 +532,6 @@
   };
   var paint = function () {
     if (base === null || pick === '') { img.style.filter = ''; return; }
-    if (pick === 'w') { img.style.filter = 'saturate(.14) sepia(.22) brightness(1.06)'; return; }
     var t = ((parseFloat(pick) - base) % 360 + 540) % 360 - 180;
     img.style.filter = Math.abs(t) < 6 ? '' : 'hue-rotate(' + t.toFixed(0) + 'deg)';
   };

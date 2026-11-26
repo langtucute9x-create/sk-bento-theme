@@ -264,8 +264,8 @@ function skb_op_thu_mau_anh() {
 		'125' => array( 'Xanh lá', '#22D36B' ),
 		'215' => array( 'Xanh dương', '#2F7BFF' ),
 		'278' => array( 'Tím', '#9B3CFF' ),
-		'w'   => array( 'Trắng ấm', '#FFE9D0' ),
 	);
+	// Không có "Trắng ấm": xoay sắc màu không mô phỏng được ánh trắng (thử thật thì ảnh trông như tắt đèn).
 	printf( '<div class="mx-mau" hidden><div class="mx-mau-row" role="group" aria-label="%s"><span>%s</span>', esc_attr( skb__( 'Thử màu đèn LED' ) ), esc_html( skb__( 'Thử màu đèn' ) ) );
 	foreach ( $mau as $h => $m ) {
 		printf( '<button type="button" class="led-swatch" data-h="%s" aria-pressed="%s" aria-label="%s" style="background:%s"></button>', esc_attr( (string) $h ), '' === (string) $h ? 'true' : 'false', esc_attr( skb__( $m[0] ) ), esc_attr( $m[1] ) );
