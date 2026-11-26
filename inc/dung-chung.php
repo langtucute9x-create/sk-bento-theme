@@ -677,6 +677,21 @@ add_action( 'save_post_mau_xe', function ( $post_id ) {
 	}
 } );
 
+/* 0.26.1 — đoạn giới thiệu S2Pro, S3Pro riêng từng xe: đọc và ghi được qua REST (trường meta của mẫu xe) để Javis viết */
+add_action( 'init', function () {
+	foreach ( array( 's2pro', 's3pro' ) as $k ) {
+		register_post_meta( 'mau_xe', '_skb_dc_chu_' . $k, array(
+			'type'              => 'string',
+			'single'            => true,
+			'show_in_rest'      => true,
+			'sanitize_callback' => 'sanitize_textarea_field',
+			'auth_callback'     => function () {
+				return current_user_can( 'edit_posts' );
+			},
+		) );
+	}
+} );
+
 /* ---------- Trang quản trị: Mẫu xe › Dòng dùng chung ---------- */
 add_action( 'admin_menu', function () {
 	add_submenu_page( 'edit.php?post_type=mau_xe', 'Dòng dùng chung', 'Dòng dùng chung', 'edit_others_posts', 'skb-dung-chung', 'skb_dc_trang' );

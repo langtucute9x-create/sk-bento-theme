@@ -194,3 +194,73 @@ function skb_goi_muc( $mo_ta ) {
 	return $out;
 }
 
+
+/* ---------- 0.26.1 — REST cho Javis: đọc danh sách gói và gắn ảnh cho từng gói ----------
+ * GET  /wp-json/skb/v1/mau-xe/<id>/goi      → các gói của xe (số thứ tự, tên, giá, ảnh) và kiểu lắp của xe.
+ * POST /wp-json/skb/v1/mau-xe/<id>/goi-anh  { "goi": 2, "ten": "27 Chi tiết", "anh": 1234 }
+ *      → CHỈ đổi ảnh của gói số 2 (anh = ID ảnh trong Thư viện; 0 = bỏ ảnh). Không đụng tên, giá, mô tả.
+ *      "ten" phải khớp tên gói đang lưu (chống gắn nhầm khi thứ tự gói đã đổi).
+ * Quyền: người sửa được mẫu xe đó (Biên tập viên trở lên). */
+add_action( 'rest_api_init', function () {
+	$quyen = function ( $req ) {
+		$id = (int) $req['id'];
+		return 'mau_xe' === get_post_type( $id ) && current_user_can( 'edit_post', $id );
+	};
+	register_rest_route( 'skb/v1', '/mau-xe/(?P<id>\d+)/goi', array(
+		'methods'             => 'GET',
+		'permission_callback' => $quyen,
+		'callback'            => function ( $req ) {
+			$id  = (int) $req['id'];
+			$out = array();
+			foreach ( skb_goi( $id ) as $i => $g ) {
+				$out[] = array(
+					'goi'     => $i + 1,
+					'ten'     => $g['ten'],
+					'gia'     => $g['gia'],
+					'goc'     => $g['goc'],
+					'mo_ta'   => $g['mo_ta'],
+					'anh'     => $g['anh'],
+					'anh_url' => $g['anh'] ? (string) wp_get_attachment_image_url( $g['anh'], 'large' ) : '',
+				);
+			}
+			$dc = function_exists( 'skb_dc_cho_xe' ) ? skb_dc_cho_xe( skb_goi( $id ) ) : null;
+			return array(
+				'id'       => $id,
+				'link'     => get_permalink( $id ),
+				'kieu_lap' => $dc ? ( 'chung' === $dc['kieu'] ? array( 's2pro', 's3pro' ) : array( 'rieng', 's2pro', 's3pro' ) ) : array(),
+				'ghi_chu'  => $dc && 'chung' === $dc['kieu'] ? 'Xe chỉ có dòng dùng chung: ảnh các gói N chi tiết do theme tự lấy, không cần gắn.' : '',
+				'goi'      => $out,
+			);
+		},
+	) );
+	register_rest_route( 'skb/v1', '/mau-xe/(?P<id>\d+)/goi-anh', array(
+		'methods'             => 'POST',
+		'permission_callback' => $quyen,
+		'callback'            => function ( $req ) {
+			$id  = (int) $req['id'];
+			$so  = (int) $req->get_param( 'goi' );
+			$ten = trim( (string) $req->get_param( 'ten' ) );
+			$anh = absint( $req->get_param( 'anh' ) );
+			$raw = get_post_meta( $id, '_skb_goi', true );
+			$raw = is_string( $raw ) ? json_decode( $raw, true ) : $raw;
+			if ( ! is_array( $raw ) || $so < 1 || ! isset( $raw[ $so - 1 ] ) || ! is_array( $raw[ $so - 1 ] ) ) {
+				return new WP_Error( 'skb_goi', 'Không có gói số này.', array( 'status' => 404 ) );
+			}
+			$dang = isset( $raw[ $so - 1 ]['ten'] ) ? trim( (string) $raw[ $so - 1 ]['ten'] ) : '';
+			if ( '' === $ten || $ten !== $dang ) {
+				return new WP_Error( 'skb_goi_ten', 'Tên gói không khớp gói đang lưu: "' . $dang . '". Đọc lại danh sách gói rồi gửi đúng tên.', array( 'status' => 409 ) );
+			}
+			if ( $anh && ( 'attachment' !== get_post_type( $anh ) || ! wp_attachment_is_image( $anh ) ) ) {
+				return new WP_Error( 'skb_goi_anh', 'ID này không phải ảnh trong Thư viện.', array( 'status' => 400 ) );
+			}
+			$cu                    = isset( $raw[ $so - 1 ]['anh'] ) ? (int) $raw[ $so - 1 ]['anh'] : 0;
+			$raw[ $so - 1 ]['anh'] = $anh;
+			update_post_meta( $id, '_skb_goi', wp_slash( wp_json_encode( array_values( $raw ), JSON_UNESCAPED_UNICODE ) ) );
+			if ( function_exists( 'skb_cache_xoa' ) ) {
+				skb_cache_xoa();
+			}
+			do_action( 'litespeed_purge_post', $id );
+			return array( 'ok' => true, 'id' => $id, 'goi' => $so, 'ten' => $dang, 'anh' => $anh, 'anh_cu' => $cu );
+		},
+	) );
+} );
