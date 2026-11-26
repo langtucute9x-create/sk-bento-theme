@@ -11,6 +11,7 @@
  *   /{slug cũ của bài viết}             → bài có _skb_old_url = /{slug} (vd. /2015-2)
  *   /category/{chuyên mục}              → /tin-tuc/ hoặc /huong-dan-su-dung/
  *   /sitemap_index.xml, /*-sitemap.xml  → /wp-sitemap.xml
+ *   /mau-xe/honda-cr-v-2017-2022, -2023-2027 → mẫu xe CR-V hiện tại (slug led-vien-noi-that-honda-crv-…)
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -82,6 +83,16 @@ function skb_redirect_target( $path ) {
 	}
 	$segs = explode( '/', trim( $path, '/' ) );
 	$head = $segs[0];
+
+	/* Đường dẫn mẫu xe đổi tên (Search Console báo 404, kiểm định 25-26/11/2026) → trang mẫu xe hiện tại */
+	$doi_ten = array(
+		'/mau-xe/honda-cr-v-2017-2022' => 'led-vien-noi-that-honda-crv-2017-2022',
+		'/mau-xe/honda-cr-v-2023-2027' => 'led-vien-noi-that-honda-crv-2023-2027',
+	);
+	if ( isset( $doi_ten[ $path ] ) ) {
+		$p = get_page_by_path( $doi_ten[ $path ], OBJECT, 'mau_xe' );
+		return ( $p && 'publish' === $p->post_status ) ? get_permalink( $p ) : get_post_type_archive_link( 'mau_xe' );
+	}
 
 	if ( in_array( $path, array( '/sitemap_index.xml', '/sitemap.xml' ), true ) || preg_match( '#^/[a-z0-9_-]+-sitemap[0-9]*\.xml$#', $path ) ) {
 		return home_url( '/wp-sitemap.xml' );
