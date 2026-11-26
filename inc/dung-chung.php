@@ -291,6 +291,25 @@ function skb_dc_ten_kieu( $nd ) {
 	return 'rieng' === $nd ? 'Ốp theo xe' : $bang[ $nd ]['ten'];
 }
 
+/** 0.26.0 — tờ ảnh của từng gói dùng chung (assets/img/dc/goi/<loại>-<số>.webp và bản cắt phần trên <loại>-<số>-tren.webp).
+ *  Trả về các khoá có đủ tệp, ví dụ array( 's2pro-18', … ). Ảnh lấy từ bảng báo giá của chủ (chỉ phần ảnh, không có giá). */
+function skb_dc_to_goi() {
+	static $co = null;
+	if ( null === $co ) {
+		$co  = array();
+		$dir = get_template_directory() . '/assets/img/dc/goi/';
+		foreach ( skb_dc_bang() as $loai => $b ) {
+			foreach ( $b['goi'] as $g ) {
+				$k = $loai . '-' . (int) $g[0];
+				if ( file_exists( $dir . $k . '.webp' ) && file_exists( $dir . $k . '-tren.webp' ) ) {
+					$co[] = $k;
+				}
+			}
+		}
+	}
+	return $co;
+}
+
 /* ---------- Hiển thị trong ô chọn gói ---------- */
 
 /** Bước 1: các thẻ kiểu lắp (đặt trên danh sách gói) */
@@ -300,7 +319,12 @@ function skb_dc_cong_tac( $dc, $goi = array(), $gp = array() ) {
 	$n    = count( skb_dc_kieu( $dc ) );
 	printf( '<p class="dc-gt">Xe này lắp được %d kiểu. Chọn một kiểu để xem gói và giá.</p>', (int) $n );
 	echo '<p class="dc-buoc"><b>1</b>Chọn kiểu lắp</p>';
-	printf( '<div class="dc-kieu" role="group" aria-label="Chọn kiểu lắp" data-dc-so="%s">', esc_attr( wp_json_encode( (object) $dc['so'] ) ) );
+	printf(
+		'<div class="dc-kieu" role="group" aria-label="Chọn kiểu lắp" data-dc-so="%s" data-dc-to="%s" data-dc-to-dir="%s">',
+		esc_attr( wp_json_encode( (object) $dc['so'] ) ),
+		esc_attr( implode( ',', skb_dc_to_goi() ) ),
+		esc_url( $dir . 'goi/' )
+	);
 	$dau = true;
 	foreach ( skb_dc_kieu( $dc ) as $pan => $nd ) {
 		if ( 'rieng' === $nd ) {
@@ -415,7 +439,15 @@ function skb_dc_duoi( $dc, $goi = array(), $gp = array(), $bai = '' ) {
 				foreach ( $mon as $m ) {
 					echo '<li>' . esc_html( $m[0] ) . ( $m[1] ? ' <span class="dc-moi">thêm so với gói ' . (int) $tr[ (int) $g[0] ][0] . '</span>' : '' ) . '</li>';
 				}
-				echo '</ul></div>';
+				echo '</ul>';
+				if ( in_array( $nd . '-' . (int) $g[0], skb_dc_to_goi(), true ) ) {
+					printf(
+						'<img class="dc-to" src="%s" alt="%s" width="800" height="1152" loading="lazy" decoding="async">',
+						esc_url( get_template_directory_uri() . '/assets/img/dc/goi/' . $nd . '-' . (int) $g[0] . '.webp' ),
+						esc_attr( sprintf( 'Các món trong gói %s %d chi tiết', $bang[ $nd ]['ten'], (int) $g[0] ) )
+					);
+				}
+				echo '</div>';
 				$dau_goi = false;
 			}
 			echo '</div>';

@@ -1228,3 +1228,4 @@ details.dc-ve.on{border-color:rgba(223,28,78,.55)}
 .mx-main{position:relative}
 .mx-anh-chu{position:absolute;left:10px;right:10px;bottom:10px;margin:0;padding:8px 12px;border-radius:10px;background:rgba(11,11,13,.82);color:var(--soft);font-size:12.5px;line-height:1.45;text-align:center}
 .mx-anh-chu[hidden]{display:none}
+.dc-to{display:block;width:100%;max-width:440px;height:auto;margin:18px 0 0;border-radius:14px;background:#fff}

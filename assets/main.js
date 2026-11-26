@@ -575,6 +575,14 @@
   var goc = main ? { src: main.getAttribute('src'), srcset: main.getAttribute('srcset') } : null;
   var thumbs0 = document.querySelector('.mx-media .mx-thumbs:not([data-dc-anh])');
   var cur = function () { return group.querySelector('[aria-pressed="true"]'); };
+  /* 0.26.0 — tờ ảnh của gói dùng chung: chọn gói thì khung ảnh lớn hiện phần trên của tờ ảnh gói đó (các món của gói) */
+  var toCo = (group.getAttribute('data-dc-to') || '').split(','), toDir = group.getAttribute('data-dc-to-dir') || '';
+  var toGoi = function (nd, ct) {
+    if (!main || !toDir || toCo.indexOf(nd + '-' + ct) < 0) return;
+    main.removeAttribute('srcset'); main.src = toDir + nd + '-' + ct + '-tren.webp';
+    each(document.querySelectorAll('.mx-th'), function (t) { t.classList.remove('on'); });
+    var chu = main.parentNode.querySelector('.mx-anh-chu'); if (chu) chu.hidden = true;
+  };
   /* Danh sách món của gói: nd = s2pro | s3pro, ct = số chi tiết; không có thì giữ gói đầu của kiểu đó */
   var monGoi = function (nd, ct) {
     var box = document.querySelector('[data-dc-ve="' + cur().getAttribute('data-dc-mo') + '"]');
@@ -647,6 +655,7 @@
     if (nd === 'rieng') { if (sv) { sv.textContent = ''; sv.hidden = true; } return; }
     cau(ct);
     monGoi(m ? m[1] : nd, ct);
+    toGoi(m ? m[1] : nd, ct);
   });
 })();
 
