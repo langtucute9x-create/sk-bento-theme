@@ -589,6 +589,7 @@ function skb_km_hop_qua( $xe_id, $goi, $gp ) {
 			<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7M7.5 8a2.5 2.5 0 0 1 0-5C10 3 12 8 12 8s2-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg>
 			<span data-km-hq-chu>Mở ưu đãi</span>
 		</button>
+		<p class="screen-reader-text" role="status" aria-live="polite" data-km-hq-tb></p>
 		<div class="km-hq-hop" aria-hidden="true"><span class="km-hq-nap"></span><span class="km-hq-than"></span></div>
 		<div class="km-hq-nd" id="km-hq-nd" hidden>
 			<p class="km-hq-chua" data-hq="0">Chọn một gói ở trên để xem ưu đãi của gói đó.</p>
@@ -623,35 +624,42 @@ function skb_km_hop_qua( $xe_id, $goi, $gp ) {
 	<script>
 	(function () {
 		var b = document.querySelector('[data-km-hq]'); if (!b) return;
-		var nut = b.querySelector('[data-km-hq-mo]'), chu = b.querySelector('[data-km-hq-chu]'), nd = b.querySelector('.km-hq-nd'), cho = null;
+		var nut = b.querySelector('[data-km-hq-mo]'), chu = b.querySelector('[data-km-hq-chu]'), nd = b.querySelector('.km-hq-nd'), tb = b.querySelector('[data-km-hq-tb]'), cho = null, dang = false;
 		var nhe = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 		var ev = function (m) { try { if (window.skbEv) window.skbEv('uu_dai', m + ' · ' + location.pathname); } catch (e) {} };
+		var doc = function (t) { if (!tb) return; tb.textContent = ''; setTimeout(function () { tb.textContent = t; }, 60); };
 		var hien = function () {
-			var r = document.querySelector('.mx-goi input:checked'), v = r ? r.value : '0';
-			b.querySelectorAll('[data-hq]').forEach(function (c) { c.hidden = c.getAttribute('data-hq') !== v; });
+			var r = document.querySelector('.mx-goi input:checked'), v = r ? r.value : '0', ct = null;
+			b.querySelectorAll('[data-hq]').forEach(function (c) { var la = c.getAttribute('data-hq') === v; c.hidden = !la; if (la) ct = c; });
+			return ct;
+		};
+		var tom = function (ct) {
+			if (!ct) return '';
+			var x = function (s) { var e = ct.querySelector(s); return e ? e.textContent.replace(/\s+/g, ' ').trim() : ''; };
+			return [x('.km-hq-ten'), x('.km-hq-gia'), x('.km-hq-ma')].filter(Boolean).join('. ') || ct.textContent.replace(/\s+/g, ' ').trim();
 		};
 		var mo = function (co) {
 			clearTimeout(cho);
-			nut.setAttribute('aria-expanded', co ? 'true' : 'false');
+			dang = co;
 			chu.textContent = co ? 'Thu gọn ưu đãi' : 'Mở ưu đãi';
-			if (!co) { b.classList.remove('dang-mo', 'mo'); nd.hidden = true; return; }
-			hien();
+			if (!co) { nut.setAttribute('aria-expanded', 'false'); b.classList.remove('dang-mo', 'mo'); nd.hidden = true; return; }
+			var ct = hien();
 			b.classList.add('dang-mo');
-			cho = setTimeout(function () { b.classList.add('mo'); nd.hidden = false; }, nhe ? 0 : 650);
+			cho = setTimeout(function () { b.classList.add('mo'); nd.hidden = false; nut.setAttribute('aria-expanded', 'true'); doc('Đã mở ưu đãi. ' + tom(ct)); }, nhe ? 0 : 650);
 		};
 		nut.addEventListener('click', function () {
-			var co = nut.getAttribute('aria-expanded') !== 'true';
+			var co = !dang;
 			mo(co);
 			if (co) ev('hop-qua');
 		});
 		document.addEventListener('keydown', function (e) {
-			if ((e.key === 'Escape' || e.key === 'Esc') && nut.getAttribute('aria-expanded') === 'true') { mo(false); nut.focus(); }
+			if ((e.key === 'Escape' || e.key === 'Esc') && dang) { mo(false); nut.focus(); }
 		});
-		document.addEventListener('change', function (e) { if (nut.getAttribute('aria-expanded') === 'true' && e.target.matches && e.target.matches('.mx-goi input')) hien(); });
+		document.addEventListener('change', function (e) { if (dang && e.target.matches && e.target.matches('.mx-goi input')) { var ct = hien(); if (!nd.hidden) doc('Ưu đãi của gói vừa chọn. ' + tom(ct)); } });
 		b.addEventListener('click', function (e) {
 			var a = e.target.closest && e.target.closest('[data-km-hq-zalo]'); if (!a) return;
 			var tin = a.getAttribute('data-tin') || '', bao = a.parentNode.querySelector('[data-km-hq-chep]');
-			var xong = function () { if (bao) bao.hidden = false; };
+			var xong = function () { if (bao) { bao.hidden = false; doc(bao.textContent); } };
 			try {
 				if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(tin).then(xong, function () {}); }
 				else { var t = document.createElement('textarea'); t.value = tin; t.setAttribute('readonly', ''); t.style.position = 'fixed'; t.style.opacity = '0'; document.body.appendChild(t); t.select(); if (document.execCommand('copy')) xong(); document.body.removeChild(t); }
