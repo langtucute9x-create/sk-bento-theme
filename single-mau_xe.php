@@ -62,6 +62,7 @@ while ( have_posts() ) :
 						<?php endif; ?>
 						<?php if ( function_exists( 'skb_op_thu_mau_anh' ) ) { skb_op_thu_mau_anh(); } ?>
 					<?php endif; ?>
+					<?php if ( function_exists( 'skb_op_khoi_mau_xe' ) ) { skb_op_khoi_mau_xe( get_the_ID() ); } // 0.23.1: khối Bộ tấm ốp nằm ở cột ảnh, dưới hàng thử màu ?>
 				</div>
 				<div class="mx-info">
 					<h1><?php echo $ngoai ? esc_html( skb_ngu_tieu_de_xe() ) : esc_html( get_the_title() ); ?></h1>
@@ -139,9 +140,8 @@ while ( have_posts() ) :
 					<?php endif; ?>
 				</div>
 			</div>
-			<?php if ( $ngoai && function_exists( 'skb_op_khoi_mau_xe' ) ) { skb_op_khoi_mau_xe( get_the_ID() ); } // bản nước ngoài không có bài giới thiệu ?>
 			<?php skb_khach_that_khoi( get_the_ID() ); ?>
-			<?php if ( ! $ngoai ) : ?><div class="entry mx-desc"><?php if ( function_exists( 'skb_op_noi_dung' ) ) { skb_op_noi_dung( get_the_ID() ); } else { the_content(); } ?></div><?php endif; ?>
+			<?php if ( ! $ngoai ) : ?><div class="entry mx-desc"><?php the_content(); ?></div><?php endif; ?>
 		</article>
 	</div>
 	<script>

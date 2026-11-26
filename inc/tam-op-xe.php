@@ -4,7 +4,7 @@
  * - Meta _skb_tam_op của mẫu xe: danh sách ID ảnh tấm ốp ĐÃ TÁCH NỀN, cách nhau bởi dấu phẩy.
  * - Đầu trang chủ: mỗi lượt hiện bộ tấm ốp của một mẫu xe, kèm tên xe và liên kết tới mẫu đó.
  *   Chưa mẫu xe nào có tấm ốp thì đầu trang giữ cách cũ (Giao diện › Tấm ốp đầu trang).
- * - Trang mẫu xe: khối "Bộ tấm ốp" của riêng xe đó.
+ * - Trang mẫu xe: khối "Bộ tấm ốp" của riêng xe đó, ở cột ảnh ngay dưới hàng thử màu (0.23.1; điện thoại: ngay sau phần giá và nút đặt lịch).
  * Phần chuyển động nằm ở assets/hero-anh.js.
  */
 
@@ -271,33 +271,6 @@ function skb_op_thu_mau_anh() {
 		printf( '<button type="button" class="led-swatch" data-h="%s" aria-pressed="%s" aria-label="%s" style="background:%s"></button>', esc_attr( (string) $h ), '' === (string) $h ? 'true' : 'false', esc_attr( skb__( $m[0] ) ), esc_attr( $m[1] ) );
 	}
 	printf( '</div><p class="mx-mau-note">%s</p></div>' . "\n", esc_html( skb__( 'Màu mô phỏng trên ảnh thật. Màu thực tế bạn chọn trong app.' ) ) );
-}
-
-/**
- * Chèn một khối vào giữa bài giới thiệu: trước tiêu đề H2 nằm giữa bài; bài không đủ 2 tiêu đề H2 thì sau đoạn văn nằm giữa.
- * Bài rỗng hoặc không có đoạn nào thì đặt khối lên trước.
- */
-function skb_op_chen_giua( $html, $khoi ) {
-	if ( preg_match_all( '/<h2[\s>]/i', $html, $m, PREG_OFFSET_CAPTURE ) && count( $m[0] ) >= 2 ) {
-		$vt = $m[0][ (int) ceil( count( $m[0] ) / 2 ) ][1] ?? $m[0][ count( $m[0] ) - 1 ][1];
-		return substr( $html, 0, $vt ) . $khoi . substr( $html, $vt );
-	}
-	if ( preg_match_all( '/<\/p>/i', $html, $m, PREG_OFFSET_CAPTURE ) && count( $m[0] ) >= 2 ) {
-		$vt = $m[0][ (int) floor( ( count( $m[0] ) - 1 ) / 2 ) ][1] + 4;
-		return substr( $html, 0, $vt ) . "\n" . $khoi . substr( $html, $vt );
-	}
-	return $khoi . $html;
-}
-
-/** Bài giới thiệu của mẫu xe, có khối "Bộ tấm ốp" nằm giữa bài (xe chưa có tấm ốp thì in bài như cũ) */
-function skb_op_noi_dung( $post_id ) {
-	ob_start();
-	the_content();
-	$bai = (string) ob_get_clean();
-	ob_start();
-	skb_op_khoi_mau_xe( $post_id );
-	$khoi = (string) ob_get_clean();
-	echo '' !== $khoi ? skb_op_chen_giua( $bai, $khoi ) : $bai; // phpcs:ignore WordPress.Security.EscapeOutput
 }
 
 /* Trang mẫu xe có tấm ốp cũng nạp script chuyển động (trang chủ đã nạp ở functions.php) */

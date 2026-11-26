@@ -1114,3 +1114,16 @@ body.km-co{--km-h:40px}
 .mx-main img{transition:filter .45s ease}
 @media (prefers-reduced-motion:reduce){.mx-main img{transition:none}}
 
+/* 0.23.1 — khối Bộ tấm ốp nằm ở cột ảnh của trang mẫu xe, dưới hàng thử màu (lấp vùng trống của cột trái trên máy tính).
+   Điện thoại (một cột): cột ảnh "tan" ra để khối này xếp sau phần tên, giá và nút đặt lịch, không đẩy giá xuống dưới. */
+.mx-media .mx-op{margin:20px 0 0;padding:20px 18px 16px}
+.mx-media .mx-op .hstage{height:clamp(260px,30vw,380px)}
+@media (max-width:860px){
+  .mx-top{display:flex;flex-direction:column;gap:0}
+  .mx-media{display:contents}
+  .mx-media>*{order:1}
+  .mx-info{order:2;margin-top:20px}
+  .mx-media>.mx-op{order:3;margin-top:24px}
+  .mx-media .mx-op .hstage{height:clamp(280px,62vw,400px)}
+}
+
