@@ -969,3 +969,26 @@ body.km-co{--km-h:40px}
 .km-hq-han .km-dem{font-weight:700;color:var(--white);margin-left:6px}
 .km-hq-ghi{margin:0;font-size:12px;color:var(--muted)}
 .km-hq [hidden]{display:none!important}
+/* 0.20.0: hộp quà mở ra khi bấm "Mở ưu đãi" */
+.km-hq-hop{position:relative;width:72px;height:60px;margin:14px auto 0;display:none}
+.km-hq.dang-mo .km-hq-hop{display:block}
+.km-hq.mo .km-hq-hop{display:none}
+.km-hq-than,.km-hq-nap{position:absolute;left:0;right:0;border-radius:6px;background:var(--grad-cta)}
+.km-hq-than{bottom:0;height:40px;margin:0 6px}
+.km-hq-nap{top:6px;height:16px;transform-origin:15% 100%}
+.km-hq-than::after,.km-hq-nap::after{content:"";position:absolute;top:0;bottom:0;left:50%;width:8px;margin-left:-4px;background:rgba(255,255,255,.85)}
+.km-hq.dang-mo .km-hq-than{animation:km-hq-lac .35s ease-in-out}
+.km-hq.dang-mo .km-hq-nap{animation:km-hq-nap .65s ease-out forwards}
+@keyframes km-hq-lac{0%,100%{transform:rotate(0)}25%{transform:rotate(-4deg)}75%{transform:rotate(4deg)}}
+@keyframes km-hq-nap{0%,40%{transform:none;opacity:1}100%{transform:translateY(-22px) rotate(-28deg);opacity:0}}
+.km-hq.mo .km-hq-nd{animation:km-hq-hien .3s ease-out}
+@keyframes km-hq-hien{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.km-hq-off{display:inline-block;padding:1px 8px;margin-right:6px;border-radius:999px;background:var(--grad-cta);color:var(--white);font-weight:700;font-size:13px}
+.km-hq-gia strong{font-size:18px}
+.km-hq-gia small{color:var(--muted)}
+.km-hq-h{margin:0 0 4px!important;font-weight:700;color:var(--white)}
+.km-hq-zalo{display:flex;align-items:center;justify-content:center;min-height:44px;margin:0 0 8px;padding:0 16px;border-radius:999px;background:#0068ff;color:#fff;font-weight:700;text-decoration:none}
+.km-hq-zalo:hover{filter:brightness(1.08)}
+.km-hq-zalo:focus-visible{outline:2px solid var(--white);outline-offset:3px}
+.km-hq-chep{font-size:13px;color:var(--white)}
+@media (prefers-reduced-motion:reduce){.km-hq.dang-mo .km-hq-hop{display:none}.km-hq .km-hq-than,.km-hq .km-hq-nap,.km-hq.mo .km-hq-nd{animation:none!important}}

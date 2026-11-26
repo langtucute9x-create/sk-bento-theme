@@ -558,9 +558,10 @@ function skb_km_bang_trang_chu() {
 }
 
 /**
- * "Hộp quà ưu đãi" ở trang mẫu xe (bản Việt, chỉ khi có chương trình đang chạy).
- * Không phải rút thăm: mọi khách trong đợt nhận đúng ưu đãi của gói đang chọn (mức giảm tính từ giá niêm yết và giá bán của gói,
- * cộng quà ghi ở chương trình). Khách bấm để mở, kèm mã ưu đãi (KM<chương trình>-<mẫu xe>-<số gói>) để đọc cho SK Light khi báo giá.
+ * Nút "Mở ưu đãi" dạng hộp quà ở trang mẫu xe (bản Việt, chỉ khi có chương trình đang chạy; bản nước ngoài skb_km_dang_chay() luôn null).
+ * Không phải rút thăm: mọi khách trong đợt nhận đúng ưu đãi của gói đang chọn. Giá lấy từ cùng mảng skb_km_gia() đang in ở ô gói, không tính lại.
+ * Hạn đợt = giờ kết thúc của chương trình, không gia hạn, không quay vòng; hết giờ thì main.js ẩn cả khối (data-km-an).
+ * Mã ưu đãi skb_km_ma_uu_dai(): {mã đợt}-{ID mẫu xe}-{thứ tự gói}. Nút Zalo chép sẵn tin (mã, xe, gói, giá) rồi mở Zalo.
  * $gp = mảng skb_km_gia() của từng gói, cùng thứ tự với $goi.
  */
 function skb_km_hop_qua( $xe_id, $goi, $gp ) {
@@ -579,45 +580,81 @@ function skb_km_hop_qua( $xe_id, $goi, $gp ) {
 	if ( ! $co_g && ! $qua ) {
 		return;
 	}
+	$zalo = skb_tel( function_exists( 'skb_opt' ) ? skb_opt( 'zalo', '0868055555' ) : '0868055555' );
+	$ten_xe = get_the_title( $xe_id );
+	$han    = wp_date( 'H:i', (int) $k['kt'], skb_km_tz() ) . ' ngày ' . wp_date( 'd/m/Y', (int) $k['kt'], skb_km_tz() );
 	?>
-	<section class="km-hq" data-km-an data-km-hq aria-label="Hộp quà ưu đãi">
+	<section class="km-hq" data-km-an data-km-hq aria-label="Ưu đãi của đợt này">
 		<button type="button" class="km-hq-nut" data-km-hq-mo aria-expanded="false" aria-controls="km-hq-nd">
 			<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7M7.5 8a2.5 2.5 0 0 1 0-5C10 3 12 8 12 8s2-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg>
-			<span>Mở hộp quà ưu đãi</span>
+			<span data-km-hq-chu>Mở ưu đãi</span>
 		</button>
+		<div class="km-hq-hop" aria-hidden="true"><span class="km-hq-nap"></span><span class="km-hq-than"></span></div>
 		<div class="km-hq-nd" id="km-hq-nd" hidden>
 			<p class="km-hq-chua" data-hq="0">Chọn một gói ở trên để xem ưu đãi của gói đó.</p>
-			<?php foreach ( $goi as $i => $g ) : $p = isset( $gp[ $i ] ) ? $gp[ $i ] : array( 'ban' => 0, 'goc' => 0, 'off' => 0 ); ?>
+			<?php
+			foreach ( $goi as $i => $g ) :
+				$p   = isset( $gp[ $i ] ) ? $gp[ $i ] : array( 'ban' => 0, 'goc' => 0, 'off' => 0 );
+				$giam = $p['goc'] && $p['off'];
+				$ma  = skb_km_ma_uu_dai( $k, $xe_id, $i );
+				$gia = $p['ban'] ? skb_tien( $p['ban'] ) : 'Liên hệ';
+				$tin = "Chào SK Light, tôi muốn nhận báo giá theo ưu đãi.\nMã ưu đãi: " . $ma . "\nXe: " . $ten_xe . "\nGói: " . $g['ten'] . "\n" . ( $giam ? 'Giá khuyến mại: ' : 'Giá: ' ) . $gia;
+				?>
 				<div class="km-hq-ct" data-hq="<?php echo (int) $i + 1; ?>" hidden>
 					<p class="km-hq-ten"><?php echo esc_html( $g['ten'] ); ?></p>
-					<?php if ( $p['goc'] && $p['off'] ) : ?>
-						<p class="km-hq-gia"><strong>Giảm <?php echo (int) $p['off']; ?>%</strong>: còn <strong><?php echo esc_html( skb_tien( $p['ban'] ) ); ?></strong> <s><?php echo esc_html( skb_tien( $p['goc'] ) ); ?></s><br>Tiết kiệm <?php echo esc_html( skb_tien( $p['goc'] - $p['ban'] ) ); ?></p>
+					<?php if ( $giam ) : ?>
+						<p class="km-hq-gia"><span class="km-hq-off">Giảm <?php echo (int) $p['off']; ?>%</span> <strong><?php echo esc_html( $gia ); ?></strong> <s><?php echo esc_html( skb_tien( $p['goc'] ) ); ?></s><br><small>Tiết kiệm <?php echo esc_html( skb_tien( $p['goc'] - $p['ban'] ) ); ?> so với giá niêm yết</small></p>
 					<?php endif; ?>
 					<?php if ( $qua ) : ?>
+						<p class="km-hq-h">Quà tặng trong đợt</p>
 						<ul class="km-hq-qua"><?php foreach ( $qua as $q ) { echo '<li>' . esc_html( $q ) . '</li>'; } ?></ul>
-					<?php elseif ( ! ( $p['goc'] && $p['off'] ) ) : ?>
+					<?php elseif ( ! $giam ) : ?>
 						<p>Gói này chưa có ưu đãi riêng trong đợt này.</p>
 					<?php endif; ?>
-					<p class="km-hq-ma">Mã ưu đãi: <code><?php echo esc_html( 'KM' . (int) $k['id'] . '-' . (int) $xe_id . '-' . ( (int) $i + 1 ) ); ?></code> Đọc mã này cho SK Light khi nhận báo giá để được áp đúng ưu đãi.</p>
+					<p class="km-hq-ma">Mã ưu đãi: <code><?php echo esc_html( $ma ); ?></code></p>
+					<a class="km-hq-zalo" href="https://zalo.me/<?php echo esc_attr( $zalo ); ?>" target="_blank" rel="noopener" data-km-hq-zalo data-tin="<?php echo esc_attr( $tin ); ?>">Gửi mã qua Zalo để nhận báo giá</a>
+					<p class="km-hq-chep" data-km-hq-chep hidden>Đã chép sẵn tin gồm mã, xe, gói và giá. Dán vào khung chat Zalo rồi gửi.</p>
 				</div>
 			<?php endforeach; ?>
-			<p class="km-hq-han"><span>Ưu đãi của đợt này còn</span><?php echo skb_km_dong_ho( $k, 'gon' ); // phpcs:ignore ?></p>
+			<p class="km-hq-han">Hạn đợt: đến hết <?php echo esc_html( $han ); ?>. Còn <?php echo skb_km_dong_ho( $k, 'gon' ); // phpcs:ignore ?></p>
 			<p class="km-hq-ghi">Ưu đãi dành cho mọi khách trong đợt này, không phải rút thăm. Đợt sau có thể có quà và mức giảm khác.</p>
 		</div>
 	</section>
 	<script>
 	(function () {
 		var b = document.querySelector('[data-km-hq]'); if (!b) return;
-		var nut = b.querySelector('[data-km-hq-mo]'), nd = b.querySelector('.km-hq-nd');
+		var nut = b.querySelector('[data-km-hq-mo]'), chu = b.querySelector('[data-km-hq-chu]'), nd = b.querySelector('.km-hq-nd'), cho = null;
+		var nhe = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		var ev = function (m) { try { if (window.skbEv) window.skbEv('uu_dai', m + ' · ' + location.pathname); } catch (e) {} };
 		var hien = function () {
 			var r = document.querySelector('.mx-goi input:checked'), v = r ? r.value : '0';
 			b.querySelectorAll('[data-hq]').forEach(function (c) { c.hidden = c.getAttribute('data-hq') !== v; });
 		};
+		var mo = function (co) {
+			clearTimeout(cho);
+			nut.setAttribute('aria-expanded', co ? 'true' : 'false');
+			chu.textContent = co ? 'Thu gọn ưu đãi' : 'Mở ưu đãi';
+			if (!co) { b.classList.remove('dang-mo', 'mo'); nd.hidden = true; return; }
+			hien();
+			b.classList.add('dang-mo');
+			cho = setTimeout(function () { b.classList.add('mo'); nd.hidden = false; }, nhe ? 0 : 650);
+		};
 		nut.addEventListener('click', function () {
-			var mo = nd.hidden; nd.hidden = !mo; nut.setAttribute('aria-expanded', mo ? 'true' : 'false'); b.classList.toggle('mo', mo);
-			if (mo) { hien(); try { if (window.skbEv) window.skbEv('uu_dai', 'hop-qua · ' + location.pathname); } catch (e) {} }
+			var co = nut.getAttribute('aria-expanded') !== 'true';
+			mo(co);
+			if (co) ev('hop-qua');
 		});
-		document.addEventListener('change', function (e) { if (!nd.hidden && e.target.matches && e.target.matches('.mx-goi input')) hien(); });
+		document.addEventListener('change', function (e) { if (nut.getAttribute('aria-expanded') === 'true' && e.target.matches && e.target.matches('.mx-goi input')) hien(); });
+		b.addEventListener('click', function (e) {
+			var a = e.target.closest && e.target.closest('[data-km-hq-zalo]'); if (!a) return;
+			var tin = a.getAttribute('data-tin') || '', bao = a.parentNode.querySelector('[data-km-hq-chep]');
+			var xong = function () { if (bao) bao.hidden = false; };
+			try {
+				if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(tin).then(xong, function () {}); }
+				else { var t = document.createElement('textarea'); t.value = tin; t.setAttribute('readonly', ''); t.style.position = 'fixed'; t.style.opacity = '0'; document.body.appendChild(t); t.select(); if (document.execCommand('copy')) xong(); document.body.removeChild(t); }
+			} catch (err) {}
+			ev('hop-qua-zalo');
+		});
 	})();
 	</script>
 	<?php
