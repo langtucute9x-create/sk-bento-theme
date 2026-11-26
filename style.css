@@ -1203,3 +1203,28 @@ body.km-co{--km-h:40px}
 /* 0.25.2 — hàng "Thử màu đèn" giữ chỗ khi ảnh đang xem không thử màu được (trước đó ẩn hẳn làm phần dưới nhảy lên) */
 .mx-mau.co[hidden]{display:block;visibility:hidden}
 
+
+/* ===== 0.26.0 — trang mẫu xe: bài giới thiệu chia theo kiểu lắp (mỗi kiểu một phần <details>; phần đang chọn mở và lên đầu) — inc/dung-chung.php ===== */
+.dc-bai-gt{margin:0 0 16px;padding-top:28px;border-top:1px solid rgba(255,255,255,.08);font-size:14px;line-height:1.55;color:var(--muted)}
+.dc-bai{display:flex;flex-direction:column;gap:10px}
+details.dc-ve{padding:0;border:1.5px solid var(--border);border-radius:18px;background:var(--tile);overflow:hidden}
+details.dc-ve.on{border-color:rgba(223,28,78,.55)}
+.dc-ve>summary{display:flex;align-items:center;gap:10px;min-height:60px;padding:12px 16px;cursor:pointer;list-style:none}
+.dc-ve>summary::-webkit-details-marker{display:none}
+.dc-ve>summary h2{flex:1;min-width:0;margin:0;font-size:clamp(17px,2vw,22px);letter-spacing:-.01em}
+.dc-ve-dc{display:none;flex:none;padding:3px 10px;border-radius:999px;background:rgba(223,28,78,.18);color:var(--accent-pale);font-size:12px;font-weight:600;white-space:nowrap}
+.dc-ve.on .dc-ve-dc{display:inline-block}
+.dc-ve-mt{flex:none;width:10px;height:10px;margin:0 4px 4px;border-right:2px solid var(--soft);border-bottom:2px solid var(--soft);transform:rotate(45deg);transition:transform .2s}
+.dc-ve[open]>summary .dc-ve-mt{transform:rotate(-135deg);margin-bottom:-4px}
+.dc-ve>summary:focus-visible{outline:2px solid var(--brand-3);outline-offset:-2px;border-radius:16px}
+.dc-ve-nd{padding:8px 16px 22px}
+.dc-ve-bai{max-width:none;margin-top:26px;padding-top:24px}
+.dc-ve-chu{margin-top:22px;font-size:15px}
+.dc-ve-chu p{margin:0 0 12px}
+.dc-ve-them{margin:22px 0 0;font-size:14px;line-height:1.55;color:var(--muted)}
+.dc-ve-them .cat-link{display:inline-block;margin-top:4px}
+@media (min-width:861px){.dc-ve>summary{padding:14px 24px}.dc-ve-nd{padding:10px 24px 28px}}
+@media (prefers-reduced-motion:reduce){.dc-ve-mt{transition:none}}
+.mx-main{position:relative}
+.mx-anh-chu{position:absolute;left:10px;right:10px;bottom:10px;margin:0;padding:8px 12px;border-radius:10px;background:rgba(11,11,13,.82);color:var(--soft);font-size:12.5px;line-height:1.45;text-align:center}
+.mx-anh-chu[hidden]{display:none}

@@ -371,20 +371,33 @@ function skb_dc_pan( $dc ) {
 		'chung' === $dc['kieu'] ? '' : ' hidden',
 		esc_url( add_query_arg( 'nguon', 'web', SKB_CATALOG_URL . '/c/dung-chung-moi-xe' ) )
 	);
-	echo '<noscript><style>.mx-goi [data-dc-pan][hidden]{display:grid!important}[data-dc-ve][hidden]{display:block!important}</style></noscript>';
+	echo '<noscript><style>.mx-goi [data-dc-pan][hidden]{display:grid!important}</style></noscript>';
 }
 
 /* ---------- Dưới phần chọn: "Về kiểu …" và bảng so sánh ---------- */
 
-function skb_dc_duoi( $dc, $goi = array(), $gp = array() ) {
+function skb_dc_duoi( $dc, $goi = array(), $gp = array(), $bai = '' ) {
 	$bang = skb_dc_bang();
 	$xe   = skb_ten_xe();
 	$kieu = skb_dc_kieu( $dc );
+	$tr   = skb_dc_truoc();
+	$cat  = add_query_arg( 'nguon', 'web', SKB_CATALOG_URL . '/c/dung-chung-moi-xe' );
 	echo '<section class="dc-duoi" aria-label="Các kiểu lắp cho xe này">' . "\n";
-	$dau = true;
+	/* 0.26.0 — bài giới thiệu chia theo kiểu lắp: mỗi kiểu một phần <details>, tất cả in sẵn trong HTML.
+	   Phần của kiểu đang chọn mở và đứng đầu (script đổi open + order); các phần khác thu gọn, bấm tiêu đề là mở. */
+	printf( '<p class="dc-bai-gt">%s</p>', esc_html( sprintf( 'Phần giới thiệu bên dưới chia theo %d kiểu lắp của %s. Phần của kiểu anh chị đang chọn được mở sẵn; bấm vào tên kiểu khác để xem thêm.', count( $kieu ), $xe ) ) );
+	echo '<div class="dc-bai">' . "\n";
+	$thu = 0;
 	foreach ( $kieu as $pan => $nd ) {
-		printf( '<div class="dc-ve" data-dc-ve="%s"%s>', esc_attr( $pan ), $dau ? '' : ' hidden' );
-		printf( '<h2>%s</h2>', esc_html( sprintf( 'Về kiểu %s trên %s', skb_dc_ten_kieu( $nd ), $xe ) ) );
+		$dau = 0 === $thu;
+		printf(
+			'<details class="dc-ve%s" data-dc-ve="%s" style="order:%d"%s><summary><h2>%s</h2><span class="dc-ve-dc">Đang chọn</span><span class="dc-ve-mt" aria-hidden="true"></span></summary><div class="dc-ve-nd">',
+			$dau ? ' on' : '',
+			esc_attr( $pan ),
+			(int) $thu,
+			$dau ? ' open' : '',
+			esc_html( sprintf( 'rieng' === $nd ? '%s cho %s' : '%s trên %s', skb_dc_ten_kieu( $nd ), $xe ) )
+		);
 		echo '<div class="dc-ve-l"><div><h3>Điểm khác biệt</h3><ul class="dc-ds">';
 		foreach ( skb_dc_diem( $nd ) as $d ) {
 			echo '<li>' . esc_html( $d ) . '</li>';
@@ -398,7 +411,6 @@ function skb_dc_duoi( $dc, $goi = array(), $gp = array() ) {
 				if ( ! $mon ) {
 					continue;
 				}
-				$tr = skb_dc_truoc();
 				printf( '<div data-dc-tp="%s-%d"%s><h3>Gói %d chi tiết gồm</h3><ul class="dc-ds">', esc_attr( $nd ), (int) $g[0], $dau_goi ? '' : ' hidden', (int) $g[0] );
 				foreach ( $mon as $m ) {
 					echo '<li>' . esc_html( $m[0] ) . ( $m[1] ? ' <span class="dc-moi">thêm so với gói ' . (int) $tr[ (int) $g[0] ][0] . '</span>' : '' ) . '</li>';
@@ -410,9 +422,32 @@ function skb_dc_duoi( $dc, $goi = array(), $gp = array() ) {
 		} else {
 			echo '<div><h3>Các món trong gói</h3><p class="dc-chu">Chọn một gói ở trên để xem danh sách các món đi kèm của gói đó.</p></div>';
 		}
-		echo '</div></div>' . "\n";
-		$dau = false;
+		echo '</div>';
+		/* Chữ riêng của kiểu này trên xe này: phần đầu là bài viết của xe; S2Pro, S3Pro là đoạn ngắn nhập ở khung "Dòng dùng chung trên xe này" */
+		if ( $dau && '' !== trim( (string) $bai ) ) {
+			echo '<div class="entry mx-desc dc-ve-bai">' . $bai . '</div>'; // phpcs:ignore -- đã qua bộ lọc the_content
+		}
+		if ( 'rieng' !== $nd ) {
+			$chu = $dau ? '' : trim( (string) get_post_meta( get_the_ID(), '_skb_dc_chu_' . $nd, true ) );
+			if ( '' !== $chu ) {
+				echo '<div class="entry dc-ve-chu">';
+				foreach ( preg_split( '/\R{2,}/u', $chu ) as $doan ) {
+					if ( '' !== trim( $doan ) ) {
+						echo '<p>' . nl2br( esc_html( trim( $doan ) ) ) . '</p>';
+					}
+				}
+				echo '</div>';
+			}
+			printf(
+				'<p class="dc-ve-them">%s <a class="cat-link" href="%s" target="_blank" rel="noopener">Xem dòng Dùng chung trên catalog <span aria-hidden="true">↗</span><span class="sr-only"> (mở catalog ở tab mới)</span></a></p>',
+				esc_html( sprintf( '%s giống nhau ở mọi dòng xe: cùng các món, cùng giá, cùng bảo hành 24 tháng.', $bang[ $nd ]['ten'] ) ),
+				esc_url( $cat )
+			);
+		}
+		echo '</div></details>' . "\n";
+		$thu++;
 	}
+	echo '</div>' . "\n";
 
 	/* Bảng so sánh: chữ thật, luôn hiện */
 	$cot = array();
@@ -482,6 +517,19 @@ function skb_dc_anh_xe( $post_id, $dc ) {
 		}
 		$ids = array_filter( array_map( 'absint', explode( ',', (string) get_post_meta( $post_id, '_skb_dc_anh_' . $nd, true ) ) ) );
 		if ( ! $ids ) {
+			/* 0.26.0 — kiểu này chưa có ảnh riêng trên xe: không để album của kiểu khác đứng thay, hiện ảnh sản phẩm của chính kiểu đó
+			   kèm dòng chú thích. Thẻ đầu tiên (pan "rieng") dùng bộ ảnh chính của xe nên không cần. */
+			if ( 'rieng' === $pan ) {
+				continue;
+			}
+			$u = get_template_directory_uri() . '/assets/img/dc/' . $nd . '.webp';
+			printf(
+				'<div class="mx-thumbs" data-dc-anh="%1$s" data-dc-chu="%2$s" role="list" hidden><button type="button" class="mx-th" data-src="%3$s" data-srcset="" aria-label="%4$s"><img src="%3$s" alt="" loading="lazy" decoding="async"></button></div>',
+				esc_attr( $pan ),
+				esc_attr( sprintf( 'Ảnh sản phẩm %s. Ảnh lắp trên %s đang được cập nhật.', skb_dc_ten_kieu( $nd ), skb_ten_xe() ) ),
+				esc_url( $u ),
+				esc_attr( 'Ảnh sản phẩm ' . skb_dc_ten_kieu( $nd ) )
+			);
 			continue;
 		}
 		printf( '<div class="mx-thumbs" data-dc-anh="%s" role="list" hidden>', esc_attr( $pan ) );
@@ -503,7 +551,7 @@ function skb_dc_anh_xe( $post_id, $dc ) {
 }
 
 add_action( 'add_meta_boxes_mau_xe', function () {
-	add_meta_box( 'skb_dc_anh', 'Ảnh dòng dùng chung trên xe này (S2Pro, S3Pro)', 'skb_dc_anh_box', 'mau_xe', 'normal', 'default' );
+	add_meta_box( 'skb_dc_anh', 'Dòng dùng chung trên xe này (S2Pro, S3Pro): ảnh và đoạn giới thiệu', 'skb_dc_anh_box', 'mau_xe', 'normal', 'default' );
 } );
 
 function skb_dc_anh_box( $post ) {
@@ -516,7 +564,7 @@ function skb_dc_anh_box( $post ) {
 		.skb-dca-list .skb-x{position:absolute;top:4px;right:4px;width:22px;height:22px;border:0;border-radius:50%;background:rgba(0,0,0,.65);color:#fff;cursor:pointer;line-height:20px;padding:0}
 		.skb-dca-list .ui-sortable-placeholder{visibility:visible!important;border:2px dashed #2271b1;background:transparent}
 	</style>
-	<p>Ảnh chụp <strong>S2Pro</strong> và <strong>S3Pro</strong> lắp trên chính mẫu xe này. Ở trang mẫu xe, khách bấm thẻ S2Pro hoặc S3Pro thì bộ ảnh phía trên đổi sang ảnh tương ứng. Để trống thì trang giữ bộ ảnh chung của xe. (Ảnh của kiểu Ốp theo xe vẫn là khung "Bộ ảnh sản phẩm".)</p>
+	<p>Ảnh chụp <strong>S2Pro</strong> và <strong>S3Pro</strong> lắp trên chính mẫu xe này. Ở trang mẫu xe, khách bấm thẻ S2Pro hoặc S3Pro thì bộ ảnh phía trên đổi sang ảnh tương ứng. Để trống thì trang hiện ảnh sản phẩm của kiểu đó kèm dòng "ảnh lắp trên xe đang được cập nhật". (Ảnh của kiểu Ốp theo xe vẫn là khung "Bộ ảnh sản phẩm".)</p>
 	<?php foreach ( array( 's2pro' => 'S2Pro', 's3pro' => 'S3Pro' ) as $k => $ten ) :
 		$ids = array_filter( array_map( 'absint', explode( ',', (string) get_post_meta( $post->ID, '_skb_dc_anh_' . $k, true ) ) ) );
 		?>
@@ -529,6 +577,9 @@ function skb_dc_anh_box( $post ) {
 				<?php endforeach; ?>
 			</ul>
 			<p><button type="button" class="button skb-dca-add">+ Thêm ảnh <?php echo esc_html( $ten ); ?></button></p>
+			<p><label for="skb-dc-chu-<?php echo esc_attr( $k ); ?>"><strong>Đoạn giới thiệu <?php echo esc_html( $ten ); ?> trên xe này</strong></label><br>
+			<textarea id="skb-dc-chu-<?php echo esc_attr( $k ); ?>" name="skb_dc_chu[<?php echo esc_attr( $k ); ?>]" rows="4" class="large-text" placeholder="Viết ngắn, chỉ điều riêng của xe này: lắp ở những vị trí nào, có gì cần lưu ý. Phần giống nhau ở mọi xe đã có sẵn, không cần chép lại."><?php echo esc_textarea( (string) get_post_meta( $post->ID, '_skb_dc_chu_' . $k, true ) ); ?></textarea>
+			<span class="description">Hiện trong phần "<?php echo esc_html( $ten ); ?> trên xe này" của bài giới thiệu. Để trống thì phần đó chỉ có nội dung chung. Xuống dòng hai lần để tách đoạn.</span></p>
 		</div>
 	<?php endforeach; ?>
 	<script>
@@ -584,6 +635,12 @@ add_action( 'save_post_mau_xe', function ( $post_id ) {
 			update_post_meta( $post_id, '_skb_dc_anh_' . $k, implode( ',', $ids ) );
 		} else {
 			delete_post_meta( $post_id, '_skb_dc_anh_' . $k );
+		}
+		$chu = isset( $_POST['skb_dc_chu'][ $k ] ) ? trim( sanitize_textarea_field( wp_unslash( $_POST['skb_dc_chu'][ $k ] ) ) ) : ''; // phpcs:ignore
+		if ( '' !== $chu ) {
+			update_post_meta( $post_id, '_skb_dc_chu_' . $k, $chu );
+		} else {
+			delete_post_meta( $post_id, '_skb_dc_chu_' . $k );
 		}
 	}
 } );

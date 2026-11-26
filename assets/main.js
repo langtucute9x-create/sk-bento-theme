@@ -554,7 +554,7 @@
 
 /* ===== 0.25.0 — trang mẫu xe: chọn kiểu lắp (Ốp theo xe | S2Pro | S3Pro) — inc/dung-chung.php =====
  * Mỗi thẻ có data-dc-mo = tên khối gói cần mở (data-dc-pan). Đổi thẻ thì: bỏ gói đang chọn, giá về khoảng giá của kiểu đó,
- * khối "Về kiểu …" (data-dc-ve), cột bảng so sánh (data-dc-cot) và bộ ảnh riêng (data-dc-anh) đổi theo.
+ * phần bài giới thiệu của kiểu đó (data-dc-ve: mở và lên đầu), cột bảng so sánh (data-dc-cot) và bộ ảnh riêng (data-dc-anh) đổi theo.
  * Chọn một gói thì hiện dòng "Gói N = gói M thêm …" và danh sách món của gói (data-dc-tp). Việc đổi giá khi chọn gói
  * vẫn do đoạn script sẵn có của trang làm (các gói cùng nhóm name="skb_goi"). Mọi nội dung đã in sẵn trong HTML. */
 (function () {
@@ -609,11 +609,13 @@
   };
   var open = function (btn) {
     var name = btn.getAttribute('data-dc-mo'), nd = btn.getAttribute('data-dc-nd');
-    each(group.children, function (b) {
+    each(group.children, function (b, i) {
       var on = b === btn, n = b.getAttribute('data-dc-mo');
       b.setAttribute('aria-pressed', on ? 'true' : 'false');
       var p = fs.querySelector('[data-dc-pan="' + n + '"]'); if (p) p.hidden = !on;
-      var v = document.querySelector('[data-dc-ve="' + n + '"]'); if (v) v.hidden = !on;
+      /* 0.26.0 — bài giới thiệu: phần của kiểu đang chọn mở và lên đầu, các phần khác thu gọn (vẫn nằm trong HTML) */
+      var v = document.querySelector('[data-dc-ve="' + n + '"]');
+      if (v) { v.open = on; v.classList.toggle('on', on); v.style.order = on ? 0 : i + 1; }
     });
     each(document.querySelectorAll('[data-dc-cot]'), function (c) { c.classList.toggle('on', c.getAttribute('data-dc-cot') === name); });
     if (cat) cat.hidden = nd === 'rieng';
@@ -621,6 +623,12 @@
     var set = document.querySelector('[data-dc-anh="' + name + '"]');
     each(document.querySelectorAll('[data-dc-anh]'), function (d) { d.hidden = d !== set; });
     if (thumbs0) thumbs0.hidden = !!set;
+    /* 0.26.0 — kiểu chưa có ảnh riêng trên xe: dòng chú thích nằm đè trong khung ảnh (không làm trang nhảy) */
+    if (main && main.parentNode) {
+      var chu = main.parentNode.querySelector('.mx-anh-chu'), t = set ? set.getAttribute('data-dc-chu') : '';
+      if (t && !chu) { chu = document.createElement('p'); chu.className = 'mx-anh-chu'; main.parentNode.appendChild(chu); }
+      if (chu) { chu.textContent = t || ''; chu.hidden = !t; }
+    }
     if (main) {
       var first = set ? set.querySelector('.mx-th') : (thumbs0 ? thumbs0.querySelector('.mx-th') : null);
       if (first) first.click();

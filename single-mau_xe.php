@@ -145,9 +145,17 @@ while ( have_posts() ) :
 					<?php endif; ?>
 				</div>
 			</div>
-			<?php if ( $dc && function_exists( 'skb_dc_duoi' ) ) { skb_dc_duoi( $dc, $goi, $gp ); } ?>
+			<?php
+			/* 0.26.0 — xe có chọn kiểu lắp: bài viết của xe nằm trong phần của kiểu đầu tiên (inc/dung-chung.php) */
+			$bai_trong = $dc && function_exists( 'skb_dc_duoi' );
+			if ( $bai_trong ) {
+				ob_start();
+				the_content();
+				skb_dc_duoi( $dc, $goi, $gp, ob_get_clean() );
+			}
+			?>
 			<?php skb_khach_that_khoi( get_the_ID() ); ?>
-			<?php if ( ! $ngoai ) : ?><div class="entry mx-desc"><?php the_content(); ?></div><?php endif; ?>
+			<?php if ( ! $ngoai && ! $bai_trong ) : ?><div class="entry mx-desc"><?php the_content(); ?></div><?php endif; ?>
 		</article>
 	</div>
 	<script>
