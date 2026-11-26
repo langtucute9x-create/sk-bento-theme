@@ -1,6 +1,6 @@
 /* Đầu trang ảnh tấm ốp thật: nhuộm màu LED, đổi bộ tấm ốp, chuyển động theo chuột / cuộn trang */
 (function () {
-	var hero = document.getElementById('hero');
+	var hero = document.getElementById('hero') || document.querySelector('.mx-op');
 	var stage = document.getElementById('hstage');
 	if (!hero || !stage) return;
 	var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -47,40 +47,98 @@
 		});
 	});
 
-	/* ---- Đổi tấm ốp: mỗi lần đổi một vị trí, luân phiên, đầu trang không bao giờ trống ---- */
-	var sets = [];
+	/* ---- Đổi tấm ốp ----
+	   Cách cũ (data-sets): trộn ảnh nhiều xe, mỗi lần đổi một vị trí.
+	   0.22.0 (data-xe): mỗi lượt là một mẫu xe; trong một xe, vị trí nào có nhiều tấm cùng dáng thì lần lượt thay nhau;
+	   hết lượt thì cả cụm mờ đi rồi hiện bộ tấm ốp của xe kế tiếp, kèm tên xe và liên kết. */
+	var sets = [], cars = [];
 	try { sets = JSON.parse(stage.getAttribute('data-sets') || '[]'); } catch (e) {}
+	try { cars = JSON.parse(stage.getAttribute('data-xe') || '[]'); } catch (e) {}
+	var byCar = cars.length > 0;
 	var slots = [].slice.call(stage.querySelectorAll('.hp'));
 	var visible = true;
-	var pools = slots.map(function (el) {
-		var k = el.getAttribute('data-slot'), seen = {}, list = [];
-		sets.forEach(function (s) { var it = s[k]; if (it && !seen[it.u]) { seen[it.u] = 1; list.push(it); } });
-		return { el: el, img: el.querySelector('img'), list: list, i: 0 };
-	}).filter(function (p) { return p.list.length > 1; });
+	var all = slots.map(function (el) { return { el: el, img: el.querySelector('img'), k: el.getAttribute('data-slot'), list: [], i: 0 }; });
+	var pools = [];
 	var small = window.matchMedia('(max-width: 760px)').matches;
 	function urlOf(it) { return small && it.m ? it.m : it.u; }
-	function preload(it) { var i = new Image(); i.src = urlOf(it); }
-	pools.forEach(function (p) { preload(p.list[1]); });
-	var turn = 0;
+	function preload(it) { if (!it) return; var i = new Image(); i.src = urlOf(it); }
+	function fill(ci) {
+		all.forEach(function (p) {
+			var list = [];
+			if (byCar) list = (cars[ci].s && cars[ci].s[p.k]) || [];
+			else { var seen = {}; sets.forEach(function (s) { var it = s[p.k]; if (it && !seen[it.u]) { seen[it.u] = 1; list.push(it); } }); }
+			p.list = list; p.i = 0;
+		});
+		pools = all.filter(function (p) { return p.list.length > 1; });
+		pools.forEach(function (p) { preload(p.list[1]); });
+	}
+	function show(p, it) {
+		var img = p.img, done = function () { img.classList.remove('out'); };
+		img.onload = done; img.onerror = done;
+		img.removeAttribute('src');
+		img.removeAttribute('srcset');
+		img.width = it.w; img.height = it.h;
+		if (it.m) img.srcset = it.m + ' ' + it.mw + 'w, ' + it.u + ' ' + it.w + 'w';
+		img.src = it.u;
+		if (img.complete) done();
+	}
+	fill(0);
+	var turn = 0, busy = false;
 	function swap() {
-		if (!visible || document.hidden || !pools.length) return;
+		if (busy || !visible || document.hidden || !pools.length) return;
 		var p = pools[turn % pools.length]; turn++;
 		p.i = (p.i + 1) % p.list.length;
-		var it = p.list[p.i], img = p.img;
-		img.classList.add('out');
+		var it = p.list[p.i];
+		p.img.classList.add('out');
 		setTimeout(function () {
-			var done = function () { img.classList.remove('out'); };
-			img.onload = done; img.onerror = done;
-			img.removeAttribute('src');
-			img.removeAttribute('srcset');
-			img.width = it.w; img.height = it.h;
-			if (it.m) img.srcset = it.m + ' ' + it.mw + 'w, ' + it.u + ' ' + it.w + 'w';
-			img.src = it.u;
-			if (img.complete) done();
+			if (busy) return;
+			show(p, it);
 			preload(p.list[(p.i + 1) % p.list.length]);
 		}, reduce ? 0 : 650);
 	}
-	if (pools.length) setInterval(swap, 2600);
+	setInterval(swap, 2600);
+
+	/* Đổi sang xe khác (chỉ khi có từ 2 xe) */
+	if (byCar && cars.length > 1) {
+		var ci = 0, cap = hero.querySelector('.hxe-a'), capB = cap && cap.querySelector('b');
+		var dots = [].slice.call(hero.querySelectorAll('.hxe-dots button'));
+		var auto = 0;
+		var warm = function (n) { var c = cars[(n + cars.length) % cars.length]; for (var k in c.s) preload(c.s[k][0]); };
+		var go = function (n) {
+			n = (n + cars.length) % cars.length;
+			if (n === ci || busy) return;
+			busy = true; ci = n;
+			all.forEach(function (p) { p.img.classList.add('out'); });
+			if (cap) cap.classList.add('out');
+			setTimeout(function () {
+				fill(ci);
+				all.forEach(function (p) {
+					var it = p.list[0];
+					p.el.classList.toggle('hp-off', !it);
+					if (it) show(p, it); else p.img.classList.remove('out');
+				});
+				if (cap) { cap.href = cars[ci].u; if (capB) capB.textContent = cars[ci].t; cap.classList.remove('out'); }
+				dots.forEach(function (d, i) { d.setAttribute('aria-pressed', i === ci ? 'true' : 'false'); });
+				busy = false; turn = 0;
+				warm(ci + 1);
+			}, reduce ? 0 : 650);
+		};
+		var plan = function () {
+			clearInterval(auto);
+			if (reduce) return; /* máy bật "giảm chuyển động": không tự đổi xe, vẫn bấm chấm được */
+			auto = setInterval(function () { if (visible && !document.hidden) go(ci + 1); }, 8000);
+		};
+		dots.forEach(function (d, i) { d.addEventListener('click', function () { go(i); plan(); }); });
+		/* Vuốt ngang trên đầu trang để đổi xe (không cản cuộn dọc) */
+		var sx = 0, sy = 0;
+		hero.addEventListener('touchstart', function (e) { var t = e.touches[0]; sx = t.clientX; sy = t.clientY; }, { passive: true });
+		hero.addEventListener('touchend', function (e) {
+			var t = e.changedTouches[0], dx = t.clientX - sx, dy = t.clientY - sy;
+			if (Math.abs(dx) > 56 && Math.abs(dx) > Math.abs(dy) * 1.8) { go(ci + (dx < 0 ? 1 : -1)); plan(); }
+		}, { passive: true });
+		warm(1);
+		plan();
+	}
 
 	/* ---- Chuyển động theo chuột và cuộn trang ---- */
 	if ('IntersectionObserver' in window) {
@@ -112,6 +170,7 @@
 			if (img.complete) setMask();
 		});
 	}
+	var home = hero.classList.contains('hero2');
 	var fine = window.matchMedia('(pointer: fine)').matches;
 	var tx = 0, ty = 0, cx = 0, cy = 0, raf = 0;
 	/* Điện thoại: không có chuột nên tấm ốp tự đung đưa nhẹ; máy có cảm biến nghiêng (Android) thì nghiêng theo tay.
@@ -146,7 +205,7 @@
 			ty = Math.cos(t * .4) * (gyro ? .15 : .4) + gy * .9;
 		}
 		cx += (tx - cx) * .08; cy += (ty - cy) * .08;
-		var sy = Math.min(window.scrollY, window.innerHeight);
+		var sy = home ? Math.min(window.scrollY, window.innerHeight) : 0; /* trang mẫu xe: khối nằm giữa trang, không trôi theo cuộn */
 		parts.forEach(function (p) {
 			var d = p.d, b = p.base === 'none' ? '' : p.base;
 			p.el.style.transform = 'perspective(1000px) translate3d(' + (cx * d * 26).toFixed(2) + 'px,' +

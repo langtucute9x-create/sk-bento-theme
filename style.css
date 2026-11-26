@@ -1065,3 +1065,36 @@ body.km-co{--km-h:40px}
 .hp-gl i{position:absolute;top:-10%;bottom:-10%;left:0;width:100%;background:linear-gradient(100deg,transparent 36%,rgba(255,255,255,.1) 44%,rgba(255,255,255,.5) 50%,rgba(255,255,255,.1) 56%,transparent 64%);will-change:transform}
 .hp-in:has(img.out) .hp-gl{opacity:0}
 @media (prefers-reduced-motion:reduce){.hp-gl{display:none}}
+
+/* Tấm ốp theo từng mẫu xe (inc/tam-op-xe.php): dòng tên xe + chấm chọn xe ở đầu trang chủ, khối Bộ tấm ốp ở trang mẫu xe */
+.hp-off{visibility:hidden}
+.hxe{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin:0 0 16px}
+.hxe-a{display:inline-flex;flex-wrap:wrap;align-items:center;gap:4px 10px;min-height:40px;padding:8px 16px;border-radius:999px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);font-size:13px;line-height:1.3;color:var(--soft);pointer-events:auto;transition:opacity .5s ease,background-color .2s}
+.hxe-a:hover{background:rgba(255,255,255,.12);color:var(--soft)}
+.hxe-a.out{opacity:0}
+.hxe-a b{color:var(--white);font-weight:600}
+.hxe-go{color:var(--link);font-weight:600;white-space:nowrap}
+.hxe-dots{display:flex;pointer-events:auto}
+.hxe-dots button{position:relative;width:22px;height:36px;padding:0;border:0;background:none;cursor:pointer}
+.hxe-dots button::before{content:"";position:absolute;left:50%;top:50%;width:7px;height:7px;transform:translate(-50%,-50%);border-radius:4px;background:rgba(255,255,255,.3);transition:width .3s,background-color .3s}
+.hxe-dots button[aria-pressed="true"]::before{width:18px;background:linear-gradient(90deg,var(--brand-2),var(--brand-3))}
+.mx-op{position:relative;margin:28px 0 0;padding:24px 24px 20px;border-radius:24px;border:1px solid var(--border);background:radial-gradient(ellipse 70% 80% at 60% 42%,#1b1021 0%,#0b0b0e 72%);overflow:hidden}
+.mx-op h2{position:relative;z-index:2;margin:0;font-family:var(--font-head);font-size:clamp(18px,2.2vw,24px);line-height:1.25;font-weight:700;letter-spacing:-.01em}
+.mx-op .hstage{position:relative;left:auto;right:auto;top:auto;bottom:auto;width:100%;max-width:820px;height:clamp(250px,50vw,430px);margin:6px auto 0}
+.mx-op .hp-ngang{left:2%;top:6%;width:92%}
+.mx-op .hp-loa{left:56%;top:14%;width:30%}
+.mx-op .hp-doc{left:86%;top:16%;height:66%;width:auto}
+.mx-op .hp-cua{left:38%;top:20%;height:64%;width:auto}
+.mx-op .hp-taplo{left:3%;top:50%;width:44%}
+.mx-op .led-pick{display:flex;position:relative;z-index:2;margin-top:8px}
+@media (max-width:760px){
+  .mx-op{margin-top:20px;padding:18px 16px 16px;border-radius:20px}
+  /* điện thoại: dòng tên xe gọn một hàng để không che cụm tấm ốp phía trên */
+  .hxe{margin-bottom:10px;gap:2px 8px}
+  .hxe-a{flex-wrap:nowrap;max-width:100%;min-height:36px;padding:6px 14px;font-size:12.5px}
+  .hxe-t{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .hxe-go{font-size:0}
+  .hxe-go span{font-size:15px}
+  .hxe-dots button{height:28px}
+}
+@media (prefers-reduced-motion:reduce){.hxe-a,.hxe-dots button::before{transition:none}}

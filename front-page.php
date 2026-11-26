@@ -13,7 +13,11 @@ $dealer_q    = $ngoai ? null : new WP_Query( array( 'post_type' => 'dai_ly', 'po
 <section class="hero2 full-bleed<?php echo 'anh' === skb_hero_mode() ? ' has-photo' : ''; ?>" id="hero" data-led="rainbow" aria-labelledby="hero-title">
 	<img class="hero2-img" src="<?php echo esc_url( skb_img( 'hero_image', 'Camera_XHS_17088886025041040g00830nd7sijp6k3048veh9175o11g6a6mv0-1.webp' ) ); ?>" alt="<?php echo esc_attr( skb__( 'Nội thất xe lắp đèn SK Ambient Light' ) ); ?>" fetchpriority="<?php echo 'anh' === skb_hero_mode() ? 'low' : 'high'; ?>">
 	<div class="hero2-shade" aria-hidden="true"></div>
-<?php if ( 'anh' === skb_hero_mode() ) :
+<?php $skb_xe = ( 'anh' === skb_hero_mode() && function_exists( 'skb_hero_xe' ) ) ? skb_hero_xe() : array(); ?>
+<?php if ( $skb_xe ) : // 0.22.0: mỗi lượt một mẫu xe (mẫu xe có khung "Tấm ốp 3D của xe này")
+	skb_op_svg();
+	skb_op_san_khau( $skb_xe, true );
+elseif ( 'anh' === skb_hero_mode() ) :
 	$sets  = skb_hero_sets();
 	$first = $sets[0];
 	$slots = array( 'ngang' => '.35', 'loa' => '.25', 'doc' => '.55', 'cua' => '1', 'taplo' => '.8' );
@@ -30,6 +34,7 @@ $dealer_q    = $ngoai ? null : new WP_Query( array( 'post_type' => 'dai_ly', 'po
 <?php endif; ?>
 	<div class="hero2-line" aria-hidden="true"><span></span></div>
 	<div class="hero2-inner">
+		<?php if ( $skb_xe ) { skb_op_chu_thich( $skb_xe ); } ?>
 		<p class="hero-eyebrow"><?php echo esc_html( $ngoai ? skb__( 'Đèn nội thất ô tô cao cấp' ) : skb_opt( 'hero_eyebrow', 'Đèn nội thất ô tô cao cấp' ) ); ?></p>
 		<h1 id="hero-title"><?php echo esc_html( $ngoai ? skb__( 'Ánh sáng thiết kế riêng' ) : skb_opt( 'hero_title_1', 'Ánh sáng thiết kế riêng' ) ); ?><br><span class="grad-text"><?php echo esc_html( $ngoai ? skb__( 'cho xe bạn.' ) : skb_opt( 'hero_title_2', 'cho xe bạn.' ) ); ?></span></h1>
 		<p class="hero-sub"><?php echo esc_html( $ngoai ? skb__( '@hero_sub' ) : skb_opt( 'hero_sub', 'Ốp thay zin theo từng dòng xe, không cắt chích dây, lắp đặt tại hệ thống đại lý SK toàn quốc.' ) ); ?></p>

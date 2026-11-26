@@ -61,6 +61,8 @@ require_once get_template_directory() . '/inc/chuyen-huong.php';
 require_once get_template_directory() . '/inc/ban-do-dai-ly.php';
 require_once get_template_directory() . '/inc/goi-san-pham.php';
 require_once get_template_directory() . '/inc/bo-anh.php';
+/* Tấm ốp theo từng mẫu xe: đầu trang chủ mỗi lượt một xe, khối Bộ tấm ốp ở trang mẫu xe (0.22.0) */
+require_once get_template_directory() . '/inc/tam-op-xe.php';
 require_once get_template_directory() . '/inc/tim-xe.php';
 require_once get_template_directory() . '/inc/su-kien.php';
 require_once get_template_directory() . '/inc/khach-that.php';
@@ -205,8 +207,9 @@ add_action( 'wp_head', function () {
 		return;
 	}
 	$sets = skb_hero_sets();
+	$xe   = function_exists( 'skb_hero_xe' ) ? skb_hero_xe() : array();
 	foreach ( array( 'ngang', 'cua' ) as $slot ) {
-		$it = $sets[0][ $slot ] ?? null;
+		$it = $xe ? ( $xe[0]['s'][ $slot ][0] ?? null ) : ( $sets[0][ $slot ] ?? null );
 		if ( ! $it ) {
 			continue;
 		}

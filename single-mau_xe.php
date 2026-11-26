@@ -138,6 +138,7 @@ while ( have_posts() ) :
 					<?php endif; ?>
 				</div>
 			</div>
+			<?php if ( function_exists( 'skb_op_khoi_mau_xe' ) ) { skb_op_khoi_mau_xe( get_the_ID() ); } ?>
 			<?php skb_khach_that_khoi( get_the_ID() ); ?>
 			<?php if ( ! $ngoai ) : ?><div class="entry mx-desc"><?php the_content(); ?></div><?php endif; ?>
 		</article>
