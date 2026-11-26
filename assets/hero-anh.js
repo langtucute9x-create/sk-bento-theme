@@ -90,12 +90,46 @@
 	var parts = slots.map(function (el) {
 		return { el: el, d: parseFloat(el.getAttribute('data-d')) || .5, base: getComputedStyle(el).transform };
 	});
+	/* 0.22.0 — vệt bóng sáng trượt trên từng tấm ốp theo góc nghiêng (cắt theo đúng hình tấm ốp bằng mask) */
+	var maskOk = window.CSS && CSS.supports && (CSS.supports('mask-image', 'url(a.png)') || CSS.supports('-webkit-mask-image', 'url(a.png)'));
+	if (maskOk) {
+		parts.forEach(function (p) {
+			var inn = p.el.querySelector('.hp-in'), img = p.el.querySelector('img');
+			if (!inn || !img) return;
+			var gl = document.createElement('span');
+			gl.className = 'hp-gl';
+			gl.appendChild(document.createElement('i'));
+			inn.appendChild(gl);
+			p.gl = gl.firstChild;
+			var setMask = function () {
+				var u = img.currentSrc || img.src;
+				if (!u) return;
+				var v = 'url("' + u.replace(/"/g, '%22') + '")';
+				gl.style.webkitMaskImage = v;
+				gl.style.maskImage = v;
+			};
+			img.addEventListener('load', setMask);
+			if (img.complete) setMask();
+		});
+	}
+	var fine = window.matchMedia('(pointer: fine)').matches;
 	var tx = 0, ty = 0, cx = 0, cy = 0, raf = 0;
-	if (window.matchMedia('(pointer: fine)').matches) {
+	/* Điện thoại: không có chuột nên tấm ốp tự đung đưa nhẹ; máy có cảm biến nghiêng (Android) thì nghiêng theo tay.
+	   iPhone đòi hỏi hộp xin quyền cảm biến nên không dùng, chỉ đung đưa. */
+	var sway = !fine, gx = 0, gy = 0, gyro = false;
+	var amp = sway ? 1.7 : 1;
+	if (fine) {
 		window.addEventListener('pointermove', function (e) {
 			tx = e.clientX / window.innerWidth * 2 - 1;
 			ty = e.clientY / window.innerHeight * 2 - 1;
 			kick();
+		}, { passive: true });
+	} else if ('DeviceOrientationEvent' in window && typeof window.DeviceOrientationEvent.requestPermission !== 'function') {
+		window.addEventListener('deviceorientation', function (e) {
+			if (e.gamma === null || e.beta === null) return;
+			gyro = true;
+			gx = Math.max(-1, Math.min(1, e.gamma / 28));
+			gy = Math.max(-1, Math.min(1, (e.beta - 50) / 28));
 		}, { passive: true });
 	}
 	window.addEventListener('scroll', function () { kick(); }, { passive: true });
@@ -104,17 +138,25 @@
 		kick();
 	});
 	function kick() { if (!raf && visible) raf = requestAnimationFrame(frame); }
-	function frame() {
+	function frame(now) {
 		raf = 0;
+		if (sway) {
+			var t = (now || performance.now()) / 1000;
+			tx = Math.sin(t * .55) * (gyro ? .25 : .7) + gx * .9;
+			ty = Math.cos(t * .4) * (gyro ? .15 : .4) + gy * .9;
+		}
 		cx += (tx - cx) * .08; cy += (ty - cy) * .08;
 		var sy = Math.min(window.scrollY, window.innerHeight);
 		parts.forEach(function (p) {
 			var d = p.d, b = p.base === 'none' ? '' : p.base;
 			p.el.style.transform = 'perspective(1000px) translate3d(' + (cx * d * 26).toFixed(2) + 'px,' +
-				(cy * d * 16 - sy * d * .22).toFixed(2) + 'px,0) rotateY(' + (cx * d * 7).toFixed(2) + 'deg) rotateX(' +
-				(-cy * d * 5).toFixed(2) + 'deg) ' + b;
+				(cy * d * 16 - sy * d * .22).toFixed(2) + 'px,0) rotateY(' + (cx * d * 7 * amp).toFixed(2) + 'deg) rotateX(' +
+				(-cy * d * 5 * amp).toFixed(2) + 'deg) ' + b;
+			if (p.gl) p.gl.style.transform = 'translate3d(' + ((cx * (.55 + d * .45)) * 62).toFixed(2) + '%,0,0)';
 		});
+		if (sway) { if (!document.hidden) kick(); return; }
 		if (Math.abs(tx - cx) > .001 || Math.abs(ty - cy) > .001) kick();
 	}
+	document.addEventListener('visibilitychange', function () { if (!document.hidden) kick(); });
 	kick();
 })();

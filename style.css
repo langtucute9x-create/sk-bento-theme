@@ -1057,3 +1057,11 @@ body.km-co{--km-h:40px}
   .btn-light::after,.btn-brand::after,.btn-dark-solid::after,.mbar a.main::after{display:none}
   .ring-nav button,.qt-card,.qt-card::before{transition:none}
 }
+
+/* ===== 0.22.0 — Đợt 2: đầu trang ảnh tấm ốp có chiều sâu 3D =====
+   Vệt bóng sáng (.hp-gl, do assets/hero-anh.js chèn) cắt theo hình tấm ốp, trượt theo góc nghiêng; điện thoại tấm ốp tự đung đưa. */
+.hp-in{position:relative}
+.hp-gl{position:absolute;inset:0;overflow:hidden;pointer-events:none;mix-blend-mode:screen;-webkit-mask-size:100% 100%;mask-size:100% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;opacity:.9;transition:opacity .5s ease}
+.hp-gl i{position:absolute;top:-10%;bottom:-10%;left:0;width:100%;background:linear-gradient(100deg,transparent 36%,rgba(255,255,255,.1) 44%,rgba(255,255,255,.5) 50%,rgba(255,255,255,.1) 56%,transparent 64%);will-change:transform}
+.hp-in:has(img.out) .hp-gl{opacity:0}
+@media (prefers-reduced-motion:reduce){.hp-gl{display:none}}
