@@ -85,7 +85,7 @@ $dealer_q    = $ngoai ? null : new WP_Query( array( 'post_type' => 'dai_ly', 'po
 		<h2 id="gal-title"><?php skb_e( 'Không gian ánh sáng đẳng cấp' ); ?></h2>
 		<p><?php skb_e( 'Xe thật, lắp tại hệ thống SK' ); ?></p>
 	</div>
-	<div class="gallery2">
+	<div class="gallery2" data-ring>
 		<figure class="g-big"><img src="<?php echo esc_url( skb_img( 'gal_1', 'Camera_XHS_17088885987411040g00830nd7sijp6k3g48veh9175o11ipa2j98.webp' ) ); ?>" alt="<?php echo esc_attr( skb__( 'Toàn cảnh khoang xe sáng đèn' ) ); ?>" loading="lazy"></figure>
 		<figure><img src="<?php echo esc_url( skb_img( 'img_door', 'IMG_1424.webp' ) ); ?>" alt="<?php echo esc_attr( skb__( 'Ốp cửa phát sáng thay zin' ) ); ?>" loading="lazy"><figcaption><?php skb_e( 'Ốp cửa thay zin' ); ?></figcaption></figure>
 		<figure><img src="<?php echo esc_url( skb_img( 'gal_2', 'IMG_2917.webp' ) ); ?>" alt="<?php echo esc_attr( skb__( 'Đèn bệ cần số' ) ); ?>" loading="lazy"><figcaption><?php skb_e( 'Bệ cần số' ); ?></figcaption></figure>
@@ -110,6 +110,8 @@ $dealer_q    = $ngoai ? null : new WP_Query( array( 'post_type' => 'dai_ly', 'po
 	</div>
 </section>
 <?php endif; ?>
+
+<?php if ( ! $ngoai ) { get_template_part( 'template-parts/trang-chu-vi', null, array( 'khoi' => 'quy-trinh' ) ); } ?>
 
 <?php if ( ! $ngoai ) : ?>
 <section class="activate-band" aria-labelledby="act-title">
