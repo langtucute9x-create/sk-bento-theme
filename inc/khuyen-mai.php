@@ -57,6 +57,7 @@ add_action( 'init', function () {
 		'_skb_km_ket_thuc'   => array( 'string', '', 'skb_km_chuan_gio', 'Giờ kết thúc, giờ Việt Nam, dạng 2026-12-25 23:59:59' ),
 		'_skb_km_bat'        => array( 'boolean', false, 'rest_sanitize_boolean', 'Bật chương trình' ),
 		'_skb_km_qua'        => array( 'string', '', 'skb_km_chuan_qua', 'Quà tặng hoặc ưu đãi riêng của đợt này, mỗi dòng một ý, tối đa 6 dòng' ),
+		'_skb_km_ma_dot'     => array( 'string', '', 'skb_km_chuan_ma_dot', 'Mã đợt in đầu mã ưu đãi, chữ in hoa và số, tối đa 12 ký tự (vd NOEL26)' ),
 	);
 	foreach ( $truong as $k => $t ) {
 		register_post_meta( 'khuyen_mai', $k, array(
@@ -131,6 +132,18 @@ function skb_km_chuan_qua( $v ) {
 	return implode( "\n", $out );
 }
 
+/** Mã đợt: chỉ giữ chữ A-Z và số, in hoa, tối đa 12 ký tự */
+function skb_km_chuan_ma_dot( $v ) {
+	$v = strtoupper( remove_accents( (string) $v ) );
+	return substr( preg_replace( '/[^A-Z0-9]/', '', $v ), 0, 12 );
+}
+
+/** Mã ưu đãi của một gói: {mã đợt}-{ID mẫu xe}-{thứ tự gói}. Chưa đặt mã đợt thì dùng KM{ID chương trình} như bản 0.19.0. */
+function skb_km_ma_uu_dai( $k, $xe_id, $i ) {
+	$dot = ! empty( $k['ma'] ) ? $k['ma'] : 'KM' . (int) $k['id'];
+	return $dot . '-' . (int) $xe_id . '-' . ( (int) $i + 1 );
+}
+
 /** Giờ hiện tại dùng để so chương trình. Bộ lọc `skb_km_bay_gio` cho phép giả giờ khi kiểm thử. */
 function skb_km_bay_gio() {
 	$thu = skb_km_thu();
@@ -167,6 +180,7 @@ function skb_km_ds() {
 			'pc'  => (int) get_post_meta( $p->ID, '_skb_km_anh_pc', true ),
 			'mb'  => (int) get_post_meta( $p->ID, '_skb_km_anh_mobile', true ),
 			'qua' => skb_km_chuan_qua( get_post_meta( $p->ID, '_skb_km_qua', true ) ),
+			'ma'  => skb_km_chuan_ma_dot( get_post_meta( $p->ID, '_skb_km_ma_dot', true ) ),
 		);
 	}
 	set_transient( 'skb_km_ds', $out, DAY_IN_SECONDS );
@@ -725,6 +739,10 @@ function skb_km_box( $post ) {
 			<td><textarea id="skb-km-qua" name="skb_km_qua" rows="4" cols="60" maxlength="760" placeholder="Mỗi dòng một ý, ví dụ: Tặng kèm ..."><?php echo esc_textarea( (string) $v( '_skb_km_qua' ) ); ?></textarea><p class="description">Hiện trong "Hộp quà ưu đãi" ở trang mẫu xe, bên cạnh mức giảm của gói. Chỉ ghi những gì thật sự giao cho khách trong đợt này (tối đa 6 dòng, mỗi dòng 120 ký tự). Để trống thì hộp quà chỉ hiện mức giảm.</p></td>
 		</tr>
 		<tr>
+			<th scope="row"><label for="skb-km-ma">Mã đợt</label></th>
+			<td><input id="skb-km-ma" type="text" name="skb_km_ma_dot" maxlength="12" value="<?php echo esc_attr( (string) $v( '_skb_km_ma_dot' ) ); ?>" placeholder="NOEL26" style="text-transform:uppercase"><p class="description">In ở đầu mã ưu đãi khách gửi qua Zalo, ví dụ <code>NOEL26-67-2</code> (mẫu xe 67, gói thứ 2). Chỉ chữ không dấu và số, tối đa 12 ký tự. Mỗi đợt một mã khác nhau. Để trống thì dùng <code>KM<?php echo (int) $post->ID; ?></code>.</p></td>
+		</tr>
+		<tr>
 			<th scope="row"><label for="skb-km-bd">Bắt đầu</label></th>
 			<td><input id="skb-km-bd" type="datetime-local" step="1" name="skb_km_bat_dau" value="<?php echo esc_attr( $gio( $v( '_skb_km_bat_dau' ) ) ); ?>"> <span class="description">ví dụ 01/12/2026 00:00:00</span></td>
 		</tr>
@@ -783,6 +801,7 @@ add_action( 'save_post_khuyen_mai', function ( $post_id ) {
 	}
 	update_post_meta( $post_id, '_skb_km_bat', ! empty( $_POST['skb_km_bat'] ) ); // phpcs:ignore
 	update_post_meta( $post_id, '_skb_km_qua', skb_km_chuan_qua( sanitize_textarea_field( wp_unslash( $_POST['skb_km_qua'] ?? '' ) ) ) ); // phpcs:ignore
+	update_post_meta( $post_id, '_skb_km_ma_dot', skb_km_chuan_ma_dot( sanitize_text_field( wp_unslash( $_POST['skb_km_ma_dot'] ?? '' ) ) ) ); // phpcs:ignore
 }, 5 );
 
 add_filter( 'manage_khuyen_mai_posts_columns', function ( $c ) {
