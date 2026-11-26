@@ -551,3 +551,53 @@
   if (img.complete && img.naturalWidth) ready();
 })();
 
+/* ===== 0.24.0 — trang mẫu xe: công tắc Ốp theo xe | Dùng chung, và chọn loại S2Pro | S3Pro (inc/dung-chung.php) =====
+ * Mỗi nút có data-dc-mo = tên khối cần mở (data-dc-pan). Đổi khối thì bỏ gói đang chọn và đưa giá về khoảng giá của khối đó;
+ * việc đổi giá khi chọn một gói vẫn do đoạn script sẵn có của trang mẫu xe làm (các gói cùng nhóm name="skb_goi"). */
+(function () {
+  var fs = document.querySelector('.mx-goi');
+  if (!fs || !fs.querySelector('[data-dc-mo]')) return;
+  var price = document.getElementById('mx-price');
+  var cat = fs.querySelector('[data-dc-cat]');
+  var books = Array.prototype.map.call(document.querySelectorAll('[data-book]'), function (a) {
+    return { a: a, href: a.getAttribute('href'), text: (a.querySelector('span') || a).textContent };
+  });
+  var pan = function (n) { return fs.querySelector('[data-dc-pan="' + n + '"]'); };
+  var reset = function () {
+    Array.prototype.forEach.call(fs.querySelectorAll('input[type=radio]'), function (r) { r.checked = false; });
+    Array.prototype.forEach.call(fs.querySelectorAll('.goi-ct'), function (c) { c.hidden = c.getAttribute('data-ct') !== '0'; });
+    var list = null;
+    Array.prototype.forEach.call(fs.querySelectorAll('.goi-list[data-dc-pan]'), function (l) { if (!list && l.offsetParent !== null) list = l; });
+    if (price && list) {
+      var p = price.querySelector('[data-p]'), o = price.querySelector('[data-o]');
+      var k = list.getAttribute('data-khoang') || '', kn = list.getAttribute('data-khoang-niem') || '';
+      if (p && k) {
+        p.textContent = document.documentElement.classList.contains('km-het') && kn ? kn : k;
+        if (kn && kn !== k) p.setAttribute('data-km-niem', kn); else p.removeAttribute('data-km-niem');
+      }
+      if (o) { o.textContent = ''; o.hidden = true; }
+    }
+    books.forEach(function (b) { b.a.setAttribute('href', b.href); (b.a.querySelector('span') || b.a).textContent = b.text; });
+    var bar = document.querySelector('[data-gia-bar]');
+    if (bar && list) bar.textContent = list.getAttribute('data-khoang') || bar.textContent;
+    if (cat) cat.hidden = !list || list.getAttribute('data-dc-pan') === 'rieng' && !!fs.querySelector('.dc-tab');
+  };
+  var open = function (btn, quiet) {
+    var group = btn.parentNode, name = btn.getAttribute('data-dc-mo');
+    Array.prototype.forEach.call(group.children, function (b) {
+      var on = b === btn, p = pan(b.getAttribute('data-dc-mo'));
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      if (p) p.hidden = !on;
+    });
+    /* Mở khối "Dùng chung" thì mở luôn loại đang được chọn bên trong */
+    var inner = pan(name) && pan(name).querySelector('.dc-loai [aria-pressed="true"]');
+    if (inner) open(inner, true);
+    if (!quiet) reset();
+  };
+  fs.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-dc-mo]');
+    if (b && fs.contains(b)) open(b);
+  });
+  if (cat) cat.hidden = !!fs.querySelector('.dc-tab');
+})();
+

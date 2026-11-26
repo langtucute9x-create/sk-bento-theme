@@ -71,7 +71,9 @@ while ( have_posts() ) :
 						<p class="mx-price" id="mx-price" aria-live="polite"><strong data-p<?php echo $km ? skb_km_niem_attr( $p0, $g0 ? ( $g0['niem'] ? $tien( $g0['niem'] ) : skb__( 'Liên hệ' ) ) : $khoang_niem ) : ''; // phpcs:ignore ?>><?php echo esc_html( $p0 ); ?></strong> <s data-o data-km-an<?php echo ( $g0 && $g0['goc'] ) ? '' : ' hidden'; ?>><?php echo esc_html( $g0 && $g0['goc'] ? $tien( $g0['goc'] ) : '' ); ?></s> <span><?php echo esc_html( $ngoai ? skb__( 'Giá bán tại Việt Nam, gồm VAT' ) : 'đã gồm VAT' ); ?></span></p>
 						<fieldset class="mx-goi">
 							<legend><?php skb_e( 'Chọn gói' ); ?> <span><?php echo esc_html( sprintf( skb__( '%d lựa chọn' ), count( $goi ) ) ); ?></span></legend>
-							<div class="goi-list">
+							<?php $dc = ( ! $ngoai && function_exists( 'skb_dc_cho_xe' ) ) ? skb_dc_cho_xe( $goi ) : null; // 0.24.0: dòng Dùng chung (S2Pro, S3Pro) ?>
+							<?php if ( $dc ) { skb_dc_cong_tac( $dc ); } ?>
+							<div class="goi-list"<?php if ( $dc ) { printf( ' data-dc-pan="rieng" data-khoang="%s" data-khoang-niem="%s"', esc_attr( $khoang ), esc_attr( $khoang_niem ) ); } ?>>
 								<?php
 								foreach ( $goi as $i => $g ) :
 									$big = $g['anh'] ? wp_get_attachment_image_src( $g['anh'], 'large' ) : false;
@@ -88,6 +90,7 @@ while ( have_posts() ) :
 									</label>
 								<?php endforeach; ?>
 							</div>
+							<?php if ( $dc ) { skb_dc_pan( $dc ); } ?>
 							<?php foreach ( $ngoai ? array() : $goi as $i => $g ) : $muc = skb_goi_muc( $g['mo_ta'] ); ?>
 								<div class="goi-ct" data-ct="<?php echo (int) $i + 1; ?>"<?php echo $i === $chon ? '' : ' hidden'; ?>>
 									<p class="goi-ct-h"><?php echo esc_html( $g['ten'] ); ?><?php echo $muc ? ' gồm:' : ''; ?></p>

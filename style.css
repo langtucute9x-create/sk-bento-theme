@@ -1127,3 +1127,20 @@ body.km-co{--km-h:40px}
   .mx-media .mx-op .hstage{height:clamp(280px,62vw,400px)}
 }
 
+/* ===== 0.24.0 — hai dòng sản phẩm trong một trang mẫu xe: Ốp theo xe | Dùng chung (S2Pro, S3Pro) — inc/dung-chung.php ===== */
+.mx-goi [data-dc-pan][hidden],.mx-goi [data-dc-cat][hidden]{display:none}
+.dc-tab,.dc-loai{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:0 0 12px}
+.dc-tab{padding:5px;border-radius:18px;background:var(--bg-2);border:1px solid var(--border)}
+.dc-tab-b,.dc-loai-b{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:3px;min-height:56px;padding:10px 14px;border-radius:13px;border:1px solid transparent;background:transparent;font-family:inherit;text-align:left;cursor:pointer;color:var(--muted);transition:background-color .2s,border-color .2s}
+.dc-tab-b b,.dc-loai-b b{font-size:15px;line-height:1.2;font-weight:700;color:var(--soft)}
+.dc-tab-b small,.dc-loai-b small{font-size:12px;line-height:1.35;color:var(--dim)}
+.dc-tab-b[aria-pressed="true"]{background:var(--tile-3);border-color:rgba(255,255,255,.14)}
+.dc-tab-b[aria-pressed="true"] b,.dc-loai-b[aria-pressed="true"] b{color:var(--white)}
+.dc-loai{gap:8px}
+.dc-loai-b{border-color:var(--border);background:var(--tile)}
+.dc-loai-b[aria-pressed="true"]{border-color:var(--brand-2);background:radial-gradient(120% 120% at 0% 0%,rgba(223,28,78,.16),transparent 70%),var(--tile)}
+.dc-note{margin:0 0 10px;font-size:13px;line-height:1.5;color:var(--soft)}
+.dc-note strong{color:var(--white)}
+.dc-cat{margin:10px 0 0;font-size:13px}
+@media (prefers-reduced-motion:reduce){.dc-tab-b,.dc-loai-b{transition:none}}
+

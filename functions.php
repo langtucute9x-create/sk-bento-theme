@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'SKB_VER', '0.23.1' );
+define( 'SKB_VER', '0.24.0' );
 
 /* Bảo mật: nạp sớm để chặn XML-RPC trước khi làm việc khác */
 require_once get_template_directory() . '/inc/bao-mat.php';
@@ -70,6 +70,8 @@ require_once get_template_directory() . '/inc/dat-lich-core.php';
 require_once get_template_directory() . '/inc/bo-nho-dem.php';
 /* Chương trình khuyến mại (banner, đồng hồ, giá theo chương trình; chỉ bản tiếng Việt) */
 require_once get_template_directory() . '/inc/khuyen-mai.php';
+/* Dòng sản phẩm Dùng chung (S2Pro, S3Pro) hiện ở mọi trang mẫu xe (0.24.0); cần skb_km_gia nên nạp sau khuyen-mai.php */
+require_once get_template_directory() . '/inc/dung-chung.php';
 require_once get_template_directory() . '/inc/catalog.php';
 /* SEO: ô SEO trong trình soạn bài + thẻ meta / Open Graph */
 require_once get_template_directory() . '/inc/seo.php';
