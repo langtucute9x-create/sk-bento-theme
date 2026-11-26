@@ -41,7 +41,7 @@ add_action( 'init', function () {
 		'menu_icon'           => 'dashicons-megaphone',
 		'capability_type'     => 'post',
 		'map_meta_cap'        => true,
-		'supports'            => array( 'title' ),
+		'supports'            => array( 'title', 'custom-fields' ),
 		'rewrite'             => false,
 		'query_var'           => false,
 		'has_archive'         => false,
@@ -669,6 +669,7 @@ function skb_km_trang_uu_dai() {
 /* ---------- Trang quản trị: khung nhập, cột trạng thái ---------- */
 add_action( 'add_meta_boxes_khuyen_mai', function () {
 	add_meta_box( 'skb_km_box', 'Ảnh banner và thời gian', 'skb_km_box', 'khuyen_mai', 'normal', 'high' );
+	remove_meta_box( 'postcustom', 'khuyen_mai', 'normal' ); /* custom-fields chỉ để REST đọc ghi meta, ẩn khung mặc định */
 } );
 
 add_action( 'admin_enqueue_scripts', function () {
