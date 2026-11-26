@@ -1103,3 +1103,14 @@ body.km-co{--km-h:40px}
 .mx-desc .mx-op{margin:32px 0}
 .mx-op .hp img{max-width:none;height:auto;border-radius:0}
 .mx-op .hp-doc img,.mx-op .hp-cua img{height:100%;width:auto}
+
+/* ===== 0.23.0 — Đợt 3: thử màu đèn ngay trên ảnh sản phẩm (trang mẫu xe) =====
+   assets/main.js xoay sắc màu của ảnh đang xem; khối .mx-mau chỉ hiện khi ảnh có vùng đèn LED một màu rõ. */
+.mx-mau{margin-top:12px}
+.mx-mau-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13px;color:var(--soft)}
+.mx-mau-row span{margin-right:2px}
+.mx-mau .led-swatch{width:36px;height:36px}
+.mx-mau-note{margin:8px 0 0;font-size:12px;line-height:1.45;color:var(--dim)}
+.mx-main img{transition:filter .45s ease}
+@media (prefers-reduced-motion:reduce){.mx-main img{transition:none}}
+

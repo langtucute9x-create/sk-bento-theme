@@ -60,6 +60,7 @@ while ( have_posts() ) :
 								<?php endforeach; ?>
 							</div>
 						<?php endif; ?>
+						<?php if ( function_exists( 'skb_op_thu_mau_anh' ) ) { skb_op_thu_mau_anh(); } ?>
 					<?php endif; ?>
 				</div>
 				<div class="mx-info">

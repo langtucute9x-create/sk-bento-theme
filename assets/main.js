@@ -491,3 +491,64 @@
     Array.prototype.forEach.call(document.querySelectorAll('.btn-lg.btn-light, .btn-lg.btn-dark-solid'), function (b) { so.observe(b); });
   }
 })();
+
+/* ===== 0.23.0 — Đợt 3: thử màu đèn ngay trên ảnh sản phẩm =====
+ * Tìm màu đèn LED chủ đạo của ảnh đang xem (vùng sáng và đậm màu), rồi xoay sắc màu cả ảnh từ màu đó sang màu khách chọn.
+ * Vùng không màu (nhựa đen, da xám) gần như không đổi. Ảnh không có vùng đèn một màu rõ thì ẩn nút. */
+(function () {
+  var box = document.querySelector('.mx-mau');
+  var img = document.getElementById('mx-main');
+  if (!box || !img) return;
+  var btns = Array.prototype.slice.call(box.querySelectorAll('.led-swatch'));
+  var base = null, pick = '';
+  /* Màu chủ đạo: trả về góc màu 0–359, hoặc null khi ảnh không có vùng đèn một màu đủ rõ */
+  var scan = function () {
+    try {
+      var n = 56, c = document.createElement('canvas');
+      c.width = n; c.height = n;
+      var x = c.getContext('2d', { willReadFrequently: true });
+      x.drawImage(img, 0, 0, n, n);
+      var d = x.getImageData(0, 0, n, n).data, bins = new Array(36), sum = 0, px = 0, i, k;
+      for (k = 0; k < 36; k++) bins[k] = 0;
+      for (i = 0; i < d.length; i += 4) {
+        var r = d[i] / 255, g = d[i + 1] / 255, b = d[i + 2] / 255;
+        var mx = Math.max(r, g, b), mn = Math.min(r, g, b), df = mx - mn;
+        if (mx < .32 || df / mx < .5) continue;
+        var h = mx === r ? ((g - b) / df) % 6 : mx === g ? (b - r) / df + 2 : (r - g) / df + 4;
+        h = (h * 60 + 360) % 360;
+        var w = (df / mx) * mx;
+        bins[Math.floor(h / 10) % 36] += w; sum += w; px++;
+      }
+      if (px / (n * n) < .025) return null;
+      var best = 0, bi = 0;
+      for (k = 0; k < 36; k++) {
+        var v = bins[(k + 35) % 36] + bins[k] + bins[(k + 1) % 36];
+        if (v > best) { best = v; bi = k; }
+      }
+      if (best / sum < .5) return null; /* ảnh nhiều màu đèn: không mô phỏng */
+      var a = bins[(bi + 35) % 36], m = bins[bi], z = bins[(bi + 1) % 36];
+      return (bi * 10 + 5 + (z - a) / (a + m + z) * 10 + 360) % 360;
+    } catch (e) { return null; } /* ảnh khác tên miền: không đọc được điểm ảnh */
+  };
+  var paint = function () {
+    if (base === null || pick === '') { img.style.filter = ''; return; }
+    if (pick === 'w') { img.style.filter = 'saturate(.14) sepia(.22) brightness(1.06)'; return; }
+    var t = ((parseFloat(pick) - base) % 360 + 540) % 360 - 180;
+    img.style.filter = Math.abs(t) < 6 ? '' : 'hue-rotate(' + t.toFixed(0) + 'deg)';
+  };
+  var ready = function () {
+    base = scan();
+    box.hidden = base === null;
+    paint();
+  };
+  btns.forEach(function (b) {
+    b.addEventListener('click', function () {
+      pick = b.getAttribute('data-h') || '';
+      btns.forEach(function (o) { o.setAttribute('aria-pressed', o === b ? 'true' : 'false'); });
+      paint();
+    });
+  });
+  img.addEventListener('load', ready);
+  if (img.complete && img.naturalWidth) ready();
+})();
+

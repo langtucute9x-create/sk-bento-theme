@@ -1,6 +1,6 @@
 <?php
 /**
- * Tấm ốp theo từng mẫu xe (0.22.0).
+ * Tấm ốp theo từng mẫu xe (0.22.0) và thử màu đèn trên ảnh sản phẩm (0.23.0).
  * - Meta _skb_tam_op của mẫu xe: danh sách ID ảnh tấm ốp ĐÃ TÁCH NỀN, cách nhau bởi dấu phẩy.
  * - Đầu trang chủ: mỗi lượt hiện bộ tấm ốp của một mẫu xe, kèm tên xe và liên kết tới mẫu đó.
  *   Chưa mẫu xe nào có tấm ốp thì đầu trang giữ cách cũ (Giao diện › Tấm ốp đầu trang).
@@ -249,6 +249,28 @@ function skb_op_khoi_mau_xe( $post_id ) {
 	skb_op_san_khau( array( array( 't' => $ten, 'u' => get_permalink( $post_id ), 's' => $bo ) ) );
 	skb_op_thu_mau();
 	echo '</section>' . "\n";
+}
+
+/**
+ * 0.23.0 — Thử màu đèn ngay trên ảnh sản phẩm (trang mẫu xe).
+ * In sẵn nhưng ẩn; assets/main.js chỉ hiện khi ảnh đang xem có vùng đèn LED một màu rõ ràng, rồi xoay sắc màu của ảnh
+ * từ màu đèn trong ảnh sang màu khách chọn. Đây là mô phỏng trên ảnh, không phải ảnh chụp từng màu.
+ */
+function skb_op_thu_mau_anh() {
+	$mau = array(
+		''    => array( 'Ảnh gốc', 'conic-gradient(#F49B3F,#DF1C4E,#8B2BB8,#3FA9FF,#F49B3F)' ),
+		'0'   => array( 'Đỏ', '#FF2D3D' ),
+		'28'  => array( 'Cam', '#FF8A1F' ),
+		'125' => array( 'Xanh lá', '#22D36B' ),
+		'215' => array( 'Xanh dương', '#2F7BFF' ),
+		'278' => array( 'Tím', '#9B3CFF' ),
+		'w'   => array( 'Trắng ấm', '#FFE9D0' ),
+	);
+	printf( '<div class="mx-mau" hidden><div class="mx-mau-row" role="group" aria-label="%s"><span>%s</span>', esc_attr( skb__( 'Thử màu đèn LED' ) ), esc_html( skb__( 'Thử màu đèn' ) ) );
+	foreach ( $mau as $h => $m ) {
+		printf( '<button type="button" class="led-swatch" data-h="%s" aria-pressed="%s" aria-label="%s" style="background:%s"></button>', esc_attr( (string) $h ), '' === (string) $h ? 'true' : 'false', esc_attr( skb__( $m[0] ) ), esc_attr( $m[1] ) );
+	}
+	printf( '</div><p class="mx-mau-note">%s</p></div>' . "\n", esc_html( skb__( 'Màu mô phỏng trên ảnh thật. Màu thực tế bạn chọn trong app.' ) ) );
 }
 
 /**
