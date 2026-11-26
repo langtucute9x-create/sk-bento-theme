@@ -1079,14 +1079,15 @@ body.km-co{--km-h:40px}
 .hxe-dots button::before{content:"";position:absolute;left:50%;top:50%;width:7px;height:7px;transform:translate(-50%,-50%);border-radius:4px;background:rgba(255,255,255,.3);transition:width .3s,background-color .3s}
 .hxe-dots button[aria-pressed="true"]::before{width:18px;background:linear-gradient(90deg,var(--brand-2),var(--brand-3))}
 .mx-op{position:relative;margin:28px 0 0;padding:24px 24px 20px;border-radius:24px;border:1px solid var(--border);background:radial-gradient(ellipse 70% 80% at 60% 42%,#1b1021 0%,#0b0b0e 72%);overflow:hidden}
-.mx-op h2{position:relative;z-index:2;margin:0;font-family:var(--font-head);font-size:clamp(18px,2.2vw,24px);line-height:1.25;font-weight:700;letter-spacing:-.01em}
-.mx-op .hstage{position:relative;left:auto;right:auto;top:auto;bottom:auto;width:100%;max-width:820px;height:clamp(250px,50vw,430px);margin:6px auto 0}
+.mx-op h2{position:relative;z-index:2;margin:0;text-align:center;font-family:var(--font-head);font-size:clamp(18px,2.2vw,24px);line-height:1.25;font-weight:700;letter-spacing:-.01em}
+.mx-op .hstage{position:relative;left:auto;right:auto;top:auto;bottom:auto;width:100%;max-width:820px;height:clamp(300px,50vw,430px);margin:6px auto 0}
 .mx-op .hp-ngang{left:2%;top:6%;width:92%}
 .mx-op .hp-loa{left:56%;top:14%;width:30%}
 .mx-op .hp-doc{left:86%;top:16%;height:66%;width:auto}
 .mx-op .hp-cua{left:38%;top:20%;height:64%;width:auto}
 .mx-op .hp-taplo{left:3%;top:50%;width:44%}
-.mx-op .led-pick{display:flex;position:relative;z-index:2;margin-top:8px}
+.mx-op .led-pick{display:flex;justify-content:center;position:relative;z-index:2;margin-top:8px}
+.mx-op .hstage{transition:translate .5s ease}
 @media (max-width:760px){
   .mx-op{margin-top:20px;padding:18px 16px 16px;border-radius:20px}
   /* điện thoại: dòng tên xe gọn một hàng để không che cụm tấm ốp phía trên */
@@ -1098,3 +1099,7 @@ body.km-co{--km-h:40px}
   .hxe-dots button{height:28px}
 }
 @media (prefers-reduced-motion:reduce){.hxe-a,.hxe-dots button::before{transition:none}}
+/* Khối Bộ tấm ốp nằm giữa bài giới thiệu (.mx-desc): bỏ các kiểu ảnh của bài viết khỏi ảnh tấm ốp */
+.mx-desc .mx-op{margin:32px 0}
+.mx-op .hp img{max-width:none;height:auto;border-radius:0}
+.mx-op .hp-doc img,.mx-op .hp-cua img{height:100%;width:auto}

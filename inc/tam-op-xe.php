@@ -251,6 +251,33 @@ function skb_op_khoi_mau_xe( $post_id ) {
 	echo '</section>' . "\n";
 }
 
+/**
+ * Chèn một khối vào giữa bài giới thiệu: trước tiêu đề H2 nằm giữa bài; bài không đủ 2 tiêu đề H2 thì sau đoạn văn nằm giữa.
+ * Bài rỗng hoặc không có đoạn nào thì đặt khối lên trước.
+ */
+function skb_op_chen_giua( $html, $khoi ) {
+	if ( preg_match_all( '/<h2[\s>]/i', $html, $m, PREG_OFFSET_CAPTURE ) && count( $m[0] ) >= 2 ) {
+		$vt = $m[0][ (int) ceil( count( $m[0] ) / 2 ) ][1] ?? $m[0][ count( $m[0] ) - 1 ][1];
+		return substr( $html, 0, $vt ) . $khoi . substr( $html, $vt );
+	}
+	if ( preg_match_all( '/<\/p>/i', $html, $m, PREG_OFFSET_CAPTURE ) && count( $m[0] ) >= 2 ) {
+		$vt = $m[0][ (int) floor( ( count( $m[0] ) - 1 ) / 2 ) ][1] + 4;
+		return substr( $html, 0, $vt ) . "\n" . $khoi . substr( $html, $vt );
+	}
+	return $khoi . $html;
+}
+
+/** Bài giới thiệu của mẫu xe, có khối "Bộ tấm ốp" nằm giữa bài (xe chưa có tấm ốp thì in bài như cũ) */
+function skb_op_noi_dung( $post_id ) {
+	ob_start();
+	the_content();
+	$bai = (string) ob_get_clean();
+	ob_start();
+	skb_op_khoi_mau_xe( $post_id );
+	$khoi = (string) ob_get_clean();
+	echo '' !== $khoi ? skb_op_chen_giua( $bai, $khoi ) : $bai; // phpcs:ignore WordPress.Security.EscapeOutput
+}
+
 /* Trang mẫu xe có tấm ốp cũng nạp script chuyển động (trang chủ đã nạp ở functions.php) */
 add_action( 'wp_footer', function () {
 	if ( is_singular( 'mau_xe' ) && skb_op_bo_xe( get_queried_object_id() ) ) {

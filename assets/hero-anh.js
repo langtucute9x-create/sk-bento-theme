@@ -140,6 +140,28 @@
 		plan();
 	}
 
+	/* ---- Trang mẫu xe: canh cụm tấm ốp vào chính giữa khối (xe thiếu vài vị trí thì cụm không bị lệch một bên) ---- */
+	if (!hero.classList.contains('hero2')) {
+		var canh = function () {
+			stage.style.translate = '';
+			var s = stage.getBoundingClientRect(), l = 1e9, r = -1e9, t = 1e9, b = -1e9;
+			all.forEach(function (p) {
+				if (p.el.classList.contains('hp-off') || !p.img.getAttribute('src')) return;
+				var c = p.img.getBoundingClientRect();
+				if (!c.width || !c.height) return;
+				l = Math.min(l, c.left); r = Math.max(r, c.right); t = Math.min(t, c.top); b = Math.max(b, c.bottom);
+			});
+			if (r < l) return;
+			var dx = (s.left + s.right) / 2 - (l + r) / 2, dy = (s.top + s.bottom) / 2 - (t + b) / 2;
+			stage.style.translate = dx.toFixed(1) + 'px ' + dy.toFixed(1) + 'px';
+		};
+		all.forEach(function (p) { p.img.addEventListener('load', canh); });
+		window.addEventListener('resize', canh);
+		window.addEventListener('load', canh);
+		setTimeout(canh, 1600); /* sau hiệu ứng hiện dần của tấm ốp */
+		canh();
+	}
+
 	/* ---- Chuyển động theo chuột và cuộn trang ---- */
 	if ('IntersectionObserver' in window) {
 		new IntersectionObserver(function (en) { visible = en[0].isIntersecting; if (visible) kick(); }).observe(hero);
