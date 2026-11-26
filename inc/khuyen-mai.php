@@ -644,6 +644,9 @@ function skb_km_hop_qua( $xe_id, $goi, $gp ) {
 			mo(co);
 			if (co) ev('hop-qua');
 		});
+		document.addEventListener('keydown', function (e) {
+			if ((e.key === 'Escape' || e.key === 'Esc') && nut.getAttribute('aria-expanded') === 'true') { mo(false); nut.focus(); }
+		});
 		document.addEventListener('change', function (e) { if (nut.getAttribute('aria-expanded') === 'true' && e.target.matches && e.target.matches('.mx-goi input')) hien(); });
 		b.addEventListener('click', function (e) {
 			var a = e.target.closest && e.target.closest('[data-km-hq-zalo]'); if (!a) return;
