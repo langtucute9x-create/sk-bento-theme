@@ -350,3 +350,144 @@
     try { localStorage.setItem('skb_km_dong', K.anh); } catch (er) {}
   });
 })();
+
+/* ===== 0.21.0 — Đợt 1 trải nghiệm: quy trình trượt ngang khi cuộn, vòng cung ảnh 3D, nút ánh kim =====
+ * Ý tưởng hình thức tham khảo ThreeUI Community (MIT, https://github.com/MengTo/threeui); mã viết riêng cho theme, không WebGL.
+ * Máy bật "giảm chuyển động" thì bỏ qua cả ba: quy trình là dải vuốt ngang, ảnh giữ lưới cũ. */
+(function () {
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduce) return;
+  var K = window.SKB || {};
+  var T = function (s) { return (K.t && K.t[s]) || s; };
+  var clamp = function (v, a, b) { return v < a ? a : v > b ? b : v; };
+  var raf = window.requestAnimationFrame || function (f) { return setTimeout(f, 16); };
+
+  /* ---- Quy trình: ghim khối, cuộn dọc đẩy dải thẻ sang ngang ---- */
+  var qt = document.querySelector('.qt');
+  if (qt && window.CSS && CSS.supports && CSS.supports('position', 'sticky')) {
+    var track = qt.querySelector('.qt-track');
+    var bar = qt.querySelector('.qt-line span');
+    var cards = Array.prototype.slice.call(track.children);
+    var dist = 0, lastW = -1, busy = false;
+    var draw = function () {
+      busy = false;
+      if (!dist) return;
+      var p = clamp(-qt.getBoundingClientRect().top / dist, 0, 1);
+      track.style.transform = 'translate3d(' + (-p * dist).toFixed(1) + 'px,0,0)';
+      if (bar) bar.style.transform = 'scaleX(' + p.toFixed(4) + ')';
+      var cur = Math.round(p * (cards.length - 1));
+      cards.forEach(function (c, i) { c.classList.toggle('on', i <= cur); });
+    };
+    var measure = function () {
+      var w = document.documentElement.clientWidth;
+      if (w === lastW) return;
+      lastW = w;
+      qt.classList.add('is-pin');
+      track.style.transform = '';
+      dist = Math.max(0, track.offsetWidth - w);
+      if (dist < 60) {
+        /* Màn rất rộng: các thẻ đã nằm gọn, không cần ghim */
+        dist = 0;
+        qt.classList.remove('is-pin');
+        qt.style.height = '';
+        cards.forEach(function (c) { c.classList.remove('on'); });
+        return;
+      }
+      qt.style.height = (qt.querySelector('.qt-pin').offsetHeight + dist) + 'px';
+      draw();
+    };
+    var ask = function () { if (!busy) { busy = true; raf(draw); } };
+    measure();
+    window.addEventListener('scroll', ask, { passive: true });
+    window.addEventListener('resize', measure);
+    window.addEventListener('load', function () { lastW = -1; measure(); });
+    /* Bàn phím: Tab tới liên kết trong thẻ nào thì cuộn tới thẻ đó */
+    track.addEventListener('focusin', function (e) {
+      if (!dist) return;
+      var li = e.target.closest && e.target.closest('.qt-card');
+      var i = cards.indexOf(li);
+      if (i < 0) return;
+      var top = qt.getBoundingClientRect().top + window.pageYOffset;
+      window.scrollTo(0, top + dist * i / (cards.length - 1));
+    });
+  }
+
+  /* ---- Ảnh: lưới thành vòng cung 3D, vuốt/kéo để xoay ---- */
+  var g = document.querySelector('.gallery2[data-ring]');
+  if (g && g.children.length > 2) {
+    var figs = Array.prototype.slice.call(g.children);
+    g.classList.add('is-ring');
+    var nav = document.createElement('div');
+    nav.className = 'ring-nav';
+    nav.innerHTML = '<button type="button" aria-label="' + T('Ảnh trước') + '">‹</button><button type="button" aria-label="' + T('Ảnh sau') + '">›</button>';
+    g.parentNode.insertBefore(nav, g.nextSibling);
+    var bs = nav.querySelectorAll('button');
+    var wait = false;
+    var turn = function () {
+      wait = false;
+      var mid = g.scrollLeft + g.clientWidth / 2;
+      figs.forEach(function (f) {
+        var w = f.offsetWidth;
+        var d = clamp((f.offsetLeft + w / 2 - mid) / w, -1.6, 1.6);
+        var a = Math.abs(d);
+        f.style.transform = 'perspective(1100px) translateX(' + (-d * w * 0.14).toFixed(1) + 'px) rotateY(' + (-d * 36).toFixed(2) + 'deg) scale(' + (1 - a * 0.1).toFixed(3) + ')';
+        f.style.filter = a < 0.02 ? '' : 'brightness(' + (1 - Math.min(a, 1) * 0.5).toFixed(2) + ')';
+        f.style.zIndex = String(10 - Math.round(a * 4));
+      });
+      bs[0].disabled = g.scrollLeft < 8;
+      bs[1].disabled = g.scrollLeft > g.scrollWidth - g.clientWidth - 8;
+    };
+    var later = function () { if (!wait) { wait = true; raf(turn); } };
+    var step = function () { return figs[0].offsetWidth; };
+    /* Mở ở ảnh giữa để hai bên đều có ảnh nghiêng */
+    var m = figs[Math.floor(figs.length / 2)];
+    g.scrollLeft = m.offsetLeft + m.offsetWidth / 2 - g.clientWidth / 2;
+    turn();
+    g.addEventListener('scroll', later, { passive: true });
+    window.addEventListener('resize', later);
+    bs[0].addEventListener('click', function () { g.scrollBy({ left: -step(), behavior: 'smooth' }); });
+    bs[1].addEventListener('click', function () { g.scrollBy({ left: step(), behavior: 'smooth' }); });
+    /* Chuột: giữ và kéo (điện thoại đã vuốt được sẵn) */
+    var x0 = 0, s0 = 0, down = false;
+    g.addEventListener('pointerdown', function (e) {
+      if (e.pointerType !== 'mouse' || e.button !== 0) return;
+      down = true; x0 = e.clientX; s0 = g.scrollLeft;
+      g.classList.add('drag');
+      if (g.setPointerCapture) g.setPointerCapture(e.pointerId);
+    });
+    g.addEventListener('pointermove', function (e) { if (down) g.scrollLeft = s0 - (e.clientX - x0); });
+    var up = function () {
+      if (!down) return;
+      down = false;
+      /* Thả tay: cuộn mượt tới ảnh gần giữa nhất rồi mới bật lại chế độ bắt dính */
+      var mid = g.scrollLeft + g.clientWidth / 2, best = figs[0], bd = 1e9;
+      figs.forEach(function (f) { var d = Math.abs(f.offsetLeft + f.offsetWidth / 2 - mid); if (d < bd) { bd = d; best = f; } });
+      g.scrollTo({ left: best.offsetLeft + best.offsetWidth / 2 - g.clientWidth / 2, behavior: 'smooth' });
+      setTimeout(function () { g.classList.remove('drag'); }, 450);
+    };
+    g.addEventListener('pointerup', up);
+    g.addEventListener('pointercancel', up);
+  }
+
+  /* ---- Nút ánh kim: vệt sáng quét khi chạm, và một lần khi nút lớn hiện ra ---- */
+  var shSel = '.btn-light, .btn-brand, .btn-dark-solid, .mbar a.main';
+  var sheen = function (el) {
+    if (el.classList.contains('sheen')) return;
+    el.classList.add('sheen');
+    setTimeout(function () { el.classList.remove('sheen'); }, 800);
+  };
+  document.addEventListener('pointerdown', function (e) {
+    var b = e.target.closest && e.target.closest(shSel);
+    if (b && e.pointerType !== 'mouse') sheen(b);
+  }, { passive: true });
+  if ('IntersectionObserver' in window) {
+    var so = new IntersectionObserver(function (es) {
+      es.forEach(function (en) {
+        if (!en.isIntersecting) return;
+        so.unobserve(en.target);
+        setTimeout(function () { sheen(en.target); }, 350);
+      });
+    }, { threshold: 0.9 });
+    Array.prototype.forEach.call(document.querySelectorAll('.btn-lg.btn-light, .btn-lg.btn-dark-solid'), function (b) { so.observe(b); });
+  }
+})();

@@ -1,6 +1,6 @@
 <?php
 /**
- * Các khối chỉ có ở trang chủ tiếng Việt (0.16.0): nỗi lo, dải số liệu, hỏi đáp, bài viết mới.
+ * Các khối chỉ có ở trang chủ tiếng Việt (0.16.0): nỗi lo, dải số liệu, hỏi đáp, bài viết mới; quy trình 4 bước (0.21.0).
  * Gọi: get_template_part( 'template-parts/trang-chu-vi', null, array( 'khoi' => 'noi-lo' ) );
  */
 defined( 'ABSPATH' ) || exit;
@@ -39,6 +39,35 @@ elseif ( 'so-lieu' === $skb_khoi ) :
 	<?php foreach ( $skb_so as $skb_s ) : if ( ! $skb_s[0] ) { continue; } ?>
 	<div><b><?php echo esc_html( $skb_s[0] ); ?></b><span><?php echo esc_html( $skb_s[1] ); ?></span></div>
 	<?php endforeach; ?>
+</section>
+	<?php
+elseif ( 'quy-trinh' === $skb_khoi ) :
+	// Chỉ dùng thông tin web đã công bố (hỏi đáp, trang mẫu xe). Không ghi thời gian lắp khi chủ chưa chốt.
+	$skb_qt = array(
+		array( 'Chọn mẫu xe', 'Tìm đúng dòng xe của bạn để xem các gói và giá. Giá trên web đã gồm lắp đặt tại đại lý SK.', get_post_type_archive_link( 'mau_xe' ), 'Xem mẫu xe' ),
+		array( 'Đặt lịch', 'Đặt lịch trên web, hoặc gọi ' . $skb_hotline . ' để được chỉ điểm lắp gần nhất.', home_url( '/dat-lich/' ), 'Đặt lịch lắp đặt' ),
+		array( 'Lắp tại đại lý SK', 'Tấm ốp thay đúng vị trí ốp zin của xe, đấu bằng giắc chờ, không cắt chích dây.', get_post_type_archive_link( 'dai_ly' ), 'Xem đại lý' ),
+		array( 'Kích hoạt bảo hành', 'Kích hoạt bằng mã dán trên hộp: bảo hành 24 tháng tính từ ngày đó, và bạn nhận mã để dùng app.', skb_activate_url(), 'Kích hoạt sản phẩm' ),
+	);
+	?>
+<section class="qt full-bleed" aria-labelledby="qt-title">
+	<div class="qt-pin">
+		<div class="sec-head qt-head">
+			<h2 id="qt-title">Từ chọn xe đến sáng đèn</h2>
+			<p><?php echo esc_html( count( $skb_qt ) ); ?> bước, làm tại đại lý SK</p>
+		</div>
+		<ol class="qt-track">
+			<?php foreach ( $skb_qt as $skb_i => $skb_q ) : ?>
+			<li class="qt-card">
+				<span class="qt-n" aria-hidden="true"><?php echo esc_html( sprintf( '%02d', $skb_i + 1 ) ); ?></span>
+				<h3><?php echo esc_html( $skb_q[0] ); ?></h3>
+				<p><?php echo esc_html( $skb_q[1] ); ?></p>
+				<a href="<?php echo esc_url( $skb_q[2] ); ?>"><?php echo esc_html( $skb_q[3] ); ?> <span aria-hidden="true">→</span></a>
+			</li>
+			<?php endforeach; ?>
+		</ol>
+		<div class="qt-line" aria-hidden="true"><span></span></div>
+	</div>
 </section>
 	<?php
 elseif ( 'hoi-dap' === $skb_khoi ) :

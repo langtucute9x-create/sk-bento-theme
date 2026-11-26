@@ -992,3 +992,68 @@ body.km-co{--km-h:40px}
 .km-hq-zalo:focus-visible{outline:2px solid var(--white);outline-offset:3px}
 .km-hq-chep{font-size:13px;color:var(--white)}
 @media (prefers-reduced-motion:reduce){.km-hq.dang-mo .km-hq-hop{display:none}.km-hq .km-hq-than,.km-hq .km-hq-nap,.km-hq.mo .km-hq-nd{animation:none!important}}
+
+/* ===== 0.21.0 — Đợt 1 trải nghiệm: quy trình trượt ngang, vòng cung ảnh 3D, nút ánh kim =====
+   Ý tưởng hình thức tham khảo ThreeUI Community (MIT, https://github.com/MengTo/threeui); viết lại bằng CSS/JS của theme, không WebGL.
+   Không có JS hoặc máy bật "giảm chuyển động": quy trình là dải vuốt ngang, ảnh giữ lưới cũ, nút không quét sáng. */
+.qt{margin-top:96px;--qt-pad:max(32px,calc(50vw - 628px))}
+.qt-head{padding:0 var(--qt-pad)}
+.qt-track{list-style:none;margin:0;padding:6px var(--qt-pad) 10px;display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding:0 var(--qt-pad);scrollbar-width:none}
+.qt-track::-webkit-scrollbar{display:none}
+.qt-card{--on:0;position:relative;flex:0 0 min(78vw,400px);scroll-snap-align:start;display:flex;flex-direction:column;min-height:300px;padding:26px 24px 24px;border-radius:24px;background:radial-gradient(120% 80% at 0% 0%,rgba(194,72,158,.14),transparent 60%),var(--tile);border:1px solid var(--border);overflow:hidden}
+.qt-card::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:linear-gradient(90deg,var(--brand-1),var(--brand-2),var(--brand-3));box-shadow:0 0 18px 2px rgba(223,28,78,.55);opacity:.9}
+.qt-n{font-family:var(--font-head);font-size:64px;line-height:1;font-weight:800;letter-spacing:-.04em;background:linear-gradient(135deg,#C2489E,var(--brand-2) 55%,var(--brand-3));-webkit-background-clip:text;background-clip:text;color:transparent}
+.qt-card h3{margin:22px 0 8px;font-family:var(--font-head);font-size:22px;line-height:1.2;font-weight:700;letter-spacing:-.02em}
+.qt-card p{margin:0 0 18px;font-size:15px;line-height:1.55;color:var(--soft)}
+.qt-card a{margin-top:auto;align-self:flex-start;display:inline-flex;align-items:center;gap:6px;min-height:44px;font-size:14px;font-weight:600;color:var(--link)}
+.qt-card a:hover{color:var(--link-hover)}
+.qt-line{display:none}
+/* Chế độ ghim (JS bật khi máy cho phép chuyển động): cuộn dọc đẩy dải thẻ sang ngang */
+.qt.is-pin .qt-pin{position:sticky;top:0;height:100vh;height:100svh;display:flex;flex-direction:column;justify-content:center;overflow:hidden}
+.qt.is-pin .qt-track{overflow:visible;scroll-snap-type:none;width:max-content;will-change:transform}
+.qt.is-pin .qt-card{flex-basis:min(78vw,400px);transition:opacity .35s,border-color .35s}
+.qt.is-pin .qt-card::before{opacity:.18;box-shadow:none;transition:opacity .35s,box-shadow .35s}
+.qt.is-pin .qt-card:not(.on){opacity:.55}
+.qt.is-pin .qt-card.on{border-color:rgba(255,255,255,.14)}
+.qt.is-pin .qt-card.on::before{opacity:1;box-shadow:0 0 18px 2px rgba(223,28,78,.55)}
+.qt.is-pin .qt-line{display:block;height:2px;margin:22px var(--qt-pad) 0;border-radius:2px;background:rgba(255,255,255,.08);overflow:hidden}
+.qt.is-pin .qt-line span{display:block;height:100%;transform-origin:0 50%;transform:scaleX(0);background:linear-gradient(90deg,var(--brand-1),var(--brand-2),var(--brand-3))}
+@media (min-width:761px){
+  .qt-card,.qt.is-pin .qt-card{flex-basis:460px;min-height:380px;padding:34px 32px 30px}
+  .qt-n{font-size:84px}
+  .qt-card h3{margin-top:32px;font-size:26px}
+  .qt-card p{font-size:16px}
+}
+@media (max-width:760px){
+  .qt{margin-top:64px;--qt-pad:22px}
+  .qt-card{min-height:280px;padding:22px 20px 18px;border-radius:20px}
+  .qt-n{font-size:52px}
+  .qt-card h3{margin-top:18px;font-size:20px}
+  .qt.is-pin .qt-pin{padding-bottom:84px}
+}
+
+/* Vòng cung ảnh 3D: JS thêm .is-ring vào .gallery2[data-ring] */
+.gallery2.is-ring{--rw:min(46vw,620px);position:relative;display:flex;gap:0;width:100vw;margin-left:calc(50% - 50vw);padding:14px calc(50% - var(--rw)/2) 22px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;cursor:grab;-webkit-user-select:none;user-select:none}
+.gallery2.is-ring::-webkit-scrollbar{display:none}
+.gallery2.is-ring.drag{scroll-snap-type:none;cursor:grabbing}
+.ux .gallery2.is-ring>figure{flex:0 0 var(--rw);aspect-ratio:3/2;min-height:0;scroll-snap-align:center;opacity:1;transition:none;will-change:transform;backface-visibility:hidden}
+.gallery2.is-ring img{-webkit-user-drag:none;pointer-events:none}
+.gallery2.is-ring figure:hover img{transform:none}
+.ring-nav{display:flex;justify-content:center;gap:10px;margin-top:6px}
+.ring-nav button{width:48px;height:48px;border-radius:50%;border:1px solid var(--border);background:var(--tile-2);color:var(--text);font-size:22px;line-height:1;cursor:pointer;font-family:inherit;transition:background-color .2s,transform .15s}
+.ring-nav button:hover{background:var(--tile-3)}
+.ring-nav button:active{transform:scale(.94)}
+.ring-nav button[disabled]{opacity:.35;cursor:default}
+@media (max-width:760px){.gallery2.is-ring{--rw:74vw}.ux .gallery2.is-ring>figure{aspect-ratio:4/5;border-radius:20px}}
+
+/* Nút ánh kim: viền sáng mép trên + vệt sáng quét qua khi rê chuột, khi chạm, và một lần khi nút hiện ra */
+.btn-light,.btn-brand,.btn-dark-solid,.mbar a.main{position:relative;overflow:hidden;isolation:isolate;box-shadow:inset 0 1px 0 rgba(255,255,255,.24),inset 0 -1px 0 rgba(0,0,0,.25)}
+.btn-light:hover{box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 0 0 4px rgba(223,28,78,.16),0 10px 30px -10px rgba(223,28,78,.6)}
+.btn-light::after,.btn-brand::after,.btn-dark-solid::after,.mbar a.main::after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(105deg,transparent 38%,rgba(255,255,255,.34) 50%,transparent 62%);transform:translateX(-110%)}
+.btn-dark-solid::after{background:linear-gradient(105deg,transparent 38%,rgba(255,255,255,.2) 50%,transparent 62%)}
+.btn.sheen::after,.mbar a.main.sheen::after{transform:translateX(110%);transition:transform .75s cubic-bezier(.2,.7,.2,1)}
+@media (hover:hover){.btn-light:hover::after,.btn-brand:hover::after,.btn-dark-solid:hover::after{transform:translateX(110%);transition:transform .75s cubic-bezier(.2,.7,.2,1)}}
+@media (prefers-reduced-motion:reduce){
+  .btn-light::after,.btn-brand::after,.btn-dark-solid::after,.mbar a.main::after{display:none}
+  .ring-nav button,.qt-card,.qt-card::before{transition:none}
+}
