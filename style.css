@@ -1188,3 +1188,15 @@ body.km-co{--km-h:40px}
 
 
 .mx-thumbs[hidden]{display:none}
+
+/* 0.25.1 — khung ảnh lớn của trang mẫu xe giữ nguyên kích thước khi đổi ảnh.
+   Trên điện thoại (từ 0.23.1) cột ảnh "tan" ra thành các phần tử của .mx-top dạng cột; .mx-top còn align-items:start của
+   bố cục lưới nên khung ảnh co theo bề rộng tấm ảnh đang xem: ảnh nhỏ hay ảnh dọc làm khung hẹp lại và cả trang nhảy. */
+.mx-main{width:100%}
+.mx-main img{object-position:center}
+@media (max-width:860px){
+  .mx-top{align-items:stretch}
+  .mx-media>*{min-width:0}
+  .mx-media>.mx-main{align-self:stretch}
+}
+
