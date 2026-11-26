@@ -1200,3 +1200,6 @@ body.km-co{--km-h:40px}
   .mx-media>.mx-main{align-self:stretch}
 }
 
+/* 0.25.2 — hàng "Thử màu đèn" giữ chỗ khi ảnh đang xem không thử màu được (trước đó ẩn hẳn làm phần dưới nhảy lên) */
+.mx-mau.co[hidden]{display:block;visibility:hidden}
+

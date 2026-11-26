@@ -538,6 +538,7 @@
   var ready = function () {
     base = scan();
     box.hidden = base === null;
+    if (base !== null) box.classList.add('co'); /* 0.25.2: đã hiện một lần thì giữ chỗ, ảnh sau không thử màu được cũng không làm trang nhảy */
     paint();
   };
   btns.forEach(function (b) {
