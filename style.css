@@ -1218,9 +1218,11 @@ details.dc-ve.on{border-color:rgba(223,28,78,.55)}
 .dc-ve[open]>summary .dc-ve-mt{transform:rotate(-135deg);margin-bottom:-4px}
 .dc-ve>summary:focus-visible{outline:2px solid var(--brand-3);outline-offset:-2px;border-radius:16px}
 .dc-ve-nd{padding:8px 16px 22px}
-.dc-ve-bai{max-width:none;margin-top:26px;padding-top:24px}
-.dc-ve-chu{margin-top:22px;font-size:15px}
+/* 0.26.2 — đoạn S2Pro, S3Pro nằm trong cột trái dưới "Điểm khác biệt"; bài của xe ra ngoài các phần <details> */
+.dc-ve-chu{margin-top:20px;padding-top:18px;border-top:1px solid rgba(255,255,255,.08);font-size:15px;line-height:1.65}
 .dc-ve-chu p{margin:0 0 12px}
+.dc-ve-chu p:last-child{margin-bottom:0}
+.dc-xe-bai{margin-top:28px}
 .dc-ve-them{margin:22px 0 0;font-size:14px;line-height:1.55;color:var(--muted)}
 .dc-ve-them .cat-link{display:inline-block;margin-top:4px}
 @media (min-width:861px){.dc-ve>summary{padding:14px 24px}.dc-ve-nd{padding:10px 24px 28px}}

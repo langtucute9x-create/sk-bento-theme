@@ -409,7 +409,7 @@ function skb_dc_duoi( $dc, $goi = array(), $gp = array(), $bai = '' ) {
 	echo '<section class="dc-duoi" aria-label="Các kiểu lắp cho xe này">' . "\n";
 	/* 0.26.0 — bài giới thiệu chia theo kiểu lắp: mỗi kiểu một phần <details>, tất cả in sẵn trong HTML.
 	   Phần của kiểu đang chọn mở và đứng đầu (script đổi open + order); các phần khác thu gọn, bấm tiêu đề là mở. */
-	printf( '<p class="dc-bai-gt">%s</p>', esc_html( sprintf( 'Phần giới thiệu bên dưới chia theo %d kiểu lắp của %s. Phần của kiểu anh chị đang chọn được mở sẵn; bấm vào tên kiểu khác để xem thêm.', count( $kieu ), $xe ) ) );
+	printf( '<p class="dc-bai-gt">%s</p>', esc_html( sprintf( 'Phần giới thiệu bên dưới chia theo %d kiểu lắp của %s. Phần của kiểu anh chị đang chọn được mở sẵn; bấm vào tên kiểu khác để xem thêm. Bài giới thiệu về xe nằm ngay dưới các phần này.', count( $kieu ), $xe ) ) );
 	echo '<div class="dc-bai">' . "\n";
 	$thu = 0;
 	foreach ( $kieu as $pan => $nd ) {
@@ -426,7 +426,21 @@ function skb_dc_duoi( $dc, $goi = array(), $gp = array(), $bai = '' ) {
 		foreach ( skb_dc_diem( $nd ) as $d ) {
 			echo '<li>' . esc_html( $d ) . '</li>';
 		}
-		echo '</ul></div>';
+		echo '</ul>';
+		/* 0.26.2 — đoạn riêng của S2Pro, S3Pro trên xe này (khung "Dòng dùng chung trên xe này") nằm ngay dưới "Điểm khác biệt", trong cột trái */
+		if ( 'rieng' !== $nd ) {
+			$chu = $dau ? '' : trim( (string) get_post_meta( get_the_ID(), '_skb_dc_chu_' . $nd, true ) );
+			if ( '' !== $chu ) {
+				echo '<div class="entry dc-ve-chu">';
+				foreach ( preg_split( '/\R{2,}/u', $chu ) as $doan ) {
+					if ( '' !== trim( $doan ) ) {
+						echo '<p>' . nl2br( esc_html( trim( $doan ) ) ) . '</p>';
+					}
+				}
+				echo '</div>';
+			}
+		}
+		echo '</div>';
 		if ( 'rieng' !== $nd ) {
 			echo '<div>';
 			$dau_goi = true;
@@ -455,21 +469,7 @@ function skb_dc_duoi( $dc, $goi = array(), $gp = array(), $bai = '' ) {
 			echo '<div><h3>Các món trong gói</h3><p class="dc-chu">Chọn một gói ở trên để xem danh sách các món đi kèm của gói đó.</p></div>';
 		}
 		echo '</div>';
-		/* Chữ riêng của kiểu này trên xe này: phần đầu là bài viết của xe; S2Pro, S3Pro là đoạn ngắn nhập ở khung "Dòng dùng chung trên xe này" */
-		if ( $dau && '' !== trim( (string) $bai ) ) {
-			echo '<div class="entry mx-desc dc-ve-bai">' . $bai . '</div>'; // phpcs:ignore -- đã qua bộ lọc the_content
-		}
 		if ( 'rieng' !== $nd ) {
-			$chu = $dau ? '' : trim( (string) get_post_meta( get_the_ID(), '_skb_dc_chu_' . $nd, true ) );
-			if ( '' !== $chu ) {
-				echo '<div class="entry dc-ve-chu">';
-				foreach ( preg_split( '/\R{2,}/u', $chu ) as $doan ) {
-					if ( '' !== trim( $doan ) ) {
-						echo '<p>' . nl2br( esc_html( trim( $doan ) ) ) . '</p>';
-					}
-				}
-				echo '</div>';
-			}
 			printf(
 				'<p class="dc-ve-them">%s <a class="cat-link" href="%s" target="_blank" rel="noopener">Xem dòng Dùng chung trên catalog <span aria-hidden="true">↗</span><span class="sr-only"> (mở catalog ở tab mới)</span></a></p>',
 				esc_html( sprintf( '%s giống nhau ở mọi dòng xe: cùng các món, cùng giá, cùng bảo hành 24 tháng.', $bang[ $nd ]['ten'] ) ),
@@ -480,6 +480,11 @@ function skb_dc_duoi( $dc, $goi = array(), $gp = array(), $bai = '' ) {
 		$thu++;
 	}
 	echo '</div>' . "\n";
+
+	/* 0.26.2 — bài viết của xe nằm ngoài các phần <details>, luôn hiện (trước đây nằm trong phần của kiểu đầu tiên nên bị thu gọn khi khách chọn S2Pro, S3Pro) */
+	if ( '' !== trim( (string) $bai ) ) {
+		echo '<div class="entry mx-desc dc-xe-bai">' . $bai . '</div>' . "\n"; // phpcs:ignore -- đã qua bộ lọc the_content
+	}
 
 	/* Bảng so sánh: chữ thật, luôn hiện */
 	$cot = array();
