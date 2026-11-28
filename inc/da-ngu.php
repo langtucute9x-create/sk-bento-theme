@@ -332,6 +332,24 @@ function skb_ngu_dien( $mau, $post_id = 0 ) {
 	) );
 }
 
+/**
+ * 0.26.5: xe chỉ có dòng dùng chung (S2Pro, S3Pro), không có gói Ốp theo xe?
+ * Cùng cách xét với bản Việt (skb_dc_cho_xe, kieu = 'chung'). Bản nước ngoài dùng câu riêng cho các xe này:
+ * không nói "thay thế ốp nhựa nguyên bản", không nói "cắm giắc chờ", chỉ nói "không cắt dây".
+ */
+function skb_ngu_chi_chung( $post_id = 0 ) {
+	if ( ! function_exists( 'skb_dc_cho_xe' ) || ! function_exists( 'skb_goi' ) ) {
+		return false;
+	}
+	$dc = skb_dc_cho_xe( skb_goi( $post_id ) );
+	return $dc && 'chung' === $dc['kieu'];
+}
+
+/** Khoá câu mẫu xe theo kiểu: '@seo_xe_t1' thành '@seo_xe_t1_chung' với xe chỉ dùng chung */
+function skb_ngu_khoa_xe( $khoa, $post_id = 0 ) {
+	return skb_ngu_chi_chung( $post_id ) ? $khoa . '_chung' : $khoa;
+}
+
 /* ---------- WhatsApp ---------- */
 
 /** Số WhatsApp dạng quốc tế không dấu: 84868055555 */
@@ -434,7 +452,7 @@ function skb_ngu_title() {
 	if ( is_singular( 'mau_xe' ) ) {
 		$id = get_queried_object_id();
 		return skb_ngu_vua( array(
-			skb_ngu_dien( skb__( '@seo_xe_t1' ), $id ),
+			skb_ngu_dien( skb__( skb_ngu_khoa_xe( '@seo_xe_t1', $id ) ), $id ),
 			skb_ngu_dien( skb__( '@seo_xe_t2' ), $id ),
 			skb_ngu_dien( skb__( '@seo_xe_t3' ), $id ),
 		), 60 );
@@ -460,8 +478,8 @@ function skb_ngu_mo_ta() {
 	if ( is_singular( 'mau_xe' ) ) {
 		$id = get_queried_object_id();
 		return skb_ngu_vua( array(
-			skb_ngu_dien( skb__( '@seo_xe_d1' ), $id ),
-			skb_ngu_dien( skb__( '@seo_xe_d2' ), $id ),
+			skb_ngu_dien( skb__( skb_ngu_khoa_xe( '@seo_xe_d1', $id ) ), $id ),
+			skb_ngu_dien( skb__( skb_ngu_khoa_xe( '@seo_xe_d2', $id ) ), $id ),
 		), 160 );
 	}
 	if ( is_tax( 'hang_xe' ) ) {

@@ -112,20 +112,21 @@ while ( have_posts() ) :
 						<p class="mx-price"><strong><?php skb_e( 'Liên hệ để báo giá' ); ?></strong></p>
 					<?php endif; ?>
 					<?php if ( $ngoai ) : ?>
-						<div class="mx-sum"><p><?php echo esc_html( skb_ngu_dien( skb__( '@xe_tt_1' ) ) ); ?></p><p><?php echo esc_html( skb_ngu_dien( skb__( '@xe_tt_2' ) ) ); ?></p></div>
+						<?php /* 0.26.5: xe chỉ dùng chung (S2Pro, S3Pro) dùng câu riêng: không "thay ốp nhựa nguyên bản", không "cắm giắc chờ", chỉ "không cắt dây" */ $chung_ngoai = skb_ngu_chi_chung( get_the_ID() ); ?>
+						<div class="mx-sum"><p><?php echo esc_html( skb_ngu_dien( skb__( skb_ngu_khoa_xe( '@xe_tt_1' ) ) ) ); ?></p><p><?php echo esc_html( skb_ngu_dien( skb__( skb_ngu_khoa_xe( '@xe_tt_2' ) ) ) ); ?></p></div>
 						<dl class="mx-spec">
 							<dt><?php skb_e( 'Lắp cho' ); ?></dt><dd><?php echo esc_html( skb_ten_xe() ); ?></dd>
 							<dt><?php skb_e( 'Bảo hành' ); ?></dt><dd><?php skb_e( '24 tháng' ); ?></dd>
 							<dt><?php skb_e( 'Tình trạng' ); ?></dt><dd><?php skb_e( 'Mới 100%, đủ phụ kiện' ); ?></dd>
 							<dt><?php skb_e( 'Điều khiển' ); ?></dt><dd><?php skb_e( 'App điện thoại và nút bấm' ); ?></dd>
-							<dt><?php skb_e( 'Lắp đặt' ); ?></dt><dd><?php skb_e( 'Cắm giắc chờ, không cắt dây zin' ); ?></dd>
+							<dt><?php skb_e( 'Lắp đặt' ); ?></dt><dd><?php skb_e( $chung_ngoai ? 'Không cắt dây zin' : 'Cắm giắc chờ, không cắt dây zin' ); ?></dd>
 						</dl>
 						<div class="mx-cta">
 							<a class="btn btn-light btn-lg btn-wa" data-wa href="<?php echo esc_url( skb_wa_url( $wa_xe ) ); ?>" target="_blank" rel="noopener"><?php echo skb_wa_icon( 18 ); // phpcs:ignore ?> <?php skb_e( 'Nhắn WhatsApp về mẫu này' ); ?></a>
 							<a class="btn btn-ghost btn-lg" href="tel:+<?php echo esc_attr( skb_wa_so() ); ?>"><?php skb_e( 'Gọi' ); ?> <?php echo esc_html( skb_tel_quoc_te() ); ?></a>
 						</div>
 						<ul class="mx-points">
-							<li><?php skb_e( 'Ốp thay zin theo đúng đời xe, không cắt dây zin' ); ?></li>
+							<li><?php skb_e( $chung_ngoai ? 'Bộ dùng chung S2Pro, S3Pro, không cắt dây' : 'Ốp thay zin theo đúng đời xe, không cắt dây zin' ); ?></li>
 							<li><?php skb_e( 'Điều khiển màu, hiệu ứng qua app và nút bấm' ); ?></li>
 							<li><?php skb_e( 'Nhắn WhatsApp để được báo giá và vận chuyển tới nước bạn' ); ?></li>
 						</ul>
