@@ -441,6 +441,7 @@ function skb_dc_duoi( $dc, $goi = array(), $gp = array(), $bai = '' ) {
 			}
 		}
 		echo '</div>';
+		$to_anh = ''; // 0.26.3: tờ ảnh gói in thành hàng riêng dưới hai cột (trước nằm trong cột phải, làm cột trái "Điểm khác biệt" trống một khoảng dài)
 		if ( 'rieng' !== $nd ) {
 			echo '<div>';
 			$dau_goi = true;
@@ -455,8 +456,11 @@ function skb_dc_duoi( $dc, $goi = array(), $gp = array(), $bai = '' ) {
 				}
 				echo '</ul>';
 				if ( in_array( $nd . '-' . (int) $g[0], skb_dc_to_goi(), true ) ) {
-					printf(
-						'<img class="dc-to" src="%s" alt="%s" width="800" height="1152" loading="lazy" decoding="async">',
+					$to_anh .= sprintf(
+						'<div data-dc-tp-anh="%s-%d"%s><img class="dc-to" src="%s" alt="%s" width="800" height="1152" loading="lazy" decoding="async"></div>',
+						esc_attr( $nd ),
+						(int) $g[0],
+						$dau_goi ? '' : ' hidden',
 						esc_url( get_template_directory_uri() . '/assets/img/dc/goi/' . $nd . '-' . (int) $g[0] . '.webp' ),
 						esc_attr( sprintf( 'Các món trong gói %s %d chi tiết', $bang[ $nd ]['ten'], (int) $g[0] ) )
 					);
@@ -469,6 +473,9 @@ function skb_dc_duoi( $dc, $goi = array(), $gp = array(), $bai = '' ) {
 			echo '<div><h3>Các món trong gói</h3><p class="dc-chu">Chọn một gói ở trên để xem danh sách các món đi kèm của gói đó.</p></div>';
 		}
 		echo '</div>';
+		if ( '' !== $to_anh ) {
+			echo '<div class="dc-to-k">' . $to_anh . '</div>'; // phpcs:ignore -- đã escape từng phần ở trên
+		}
 		if ( 'rieng' !== $nd ) {
 			printf(
 				'<p class="dc-ve-them">%s <a class="cat-link" href="%s" target="_blank" rel="noopener">Xem dòng Dùng chung trên catalog <span aria-hidden="true">↗</span><span class="sr-only"> (mở catalog ở tab mới)</span></a></p>',

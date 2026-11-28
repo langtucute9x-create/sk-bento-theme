@@ -590,6 +590,9 @@
     var all = box.querySelectorAll('[data-dc-tp]'), hit = box.querySelector('[data-dc-tp="' + nd + '-' + ct + '"]');
     if (!all.length) return;
     each(all, function (d, i) { d.hidden = hit ? d !== hit : i !== 0; });
+    /* 0.26.3: tờ ảnh gói nằm ở hàng riêng dưới hai cột (data-dc-tp-anh), đổi theo cùng gói với danh sách món */
+    var key = (hit || all[0]).getAttribute('data-dc-tp');
+    each(box.querySelectorAll('[data-dc-tp-anh]'), function (d) { d.hidden = d.getAttribute('data-dc-tp-anh') !== key; });
   };
   var cau = function (ct) {
     if (!sv) return;
