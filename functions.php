@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'SKB_VER', '0.26.4' );
+define( 'SKB_VER', '0.26.5' );
 
 /* Bảo mật: nạp sớm để chặn XML-RPC trước khi làm việc khác */
 require_once get_template_directory() . '/inc/bao-mat.php';
