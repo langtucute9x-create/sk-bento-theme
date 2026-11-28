@@ -137,9 +137,14 @@ while ( have_posts() ) :
 						<a class="btn btn-light btn-lg" data-book href="<?php echo esc_url( add_query_arg( 'xe', rawurlencode( $book_xe ), $book ) ); ?>"><?php echo $chon >= 0 ? 'Đặt lịch lắp gói này' : 'Đặt lịch lắp mẫu này'; ?></a>
 						<a class="btn btn-ghost btn-lg" href="tel:<?php echo esc_attr( skb_tel( $hotline ) ); ?>">Gọi <?php echo esc_html( $hotline ); ?></a>
 					</div>
+					<?php /* 0.26.3: xe chỉ có dòng dùng chung (S2Pro, S3Pro) không ghi "ốp thay zin", "không cắt dây zin"; điều khiển giọng nói là phụ kiện mua thêm nên không ghi ở đây */ ?>
 					<ul class="mx-points">
-						<li>Ốp thay zin theo đúng đời xe, không cắt dây zin</li>
-						<li>Điều khiển màu, hiệu ứng qua app và giọng nói</li>
+						<?php if ( $dc && 'chung' === $dc['kieu'] ) : ?>
+							<li>Bộ dùng chung S2Pro, S3Pro: cùng các món, cùng giá ở mọi dòng xe</li>
+						<?php else : ?>
+							<li>Ốp thay zin theo đúng đời xe, không cắt dây zin</li>
+						<?php endif; ?>
+						<li>Điều khiển màu, hiệu ứng qua app và nút bấm</li>
 						<li>Lắp đặt tại hệ thống đại lý SK toàn quốc</li>
 					</ul>
 					<?php endif; ?>
